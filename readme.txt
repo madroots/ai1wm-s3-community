@@ -3,7 +3,7 @@ Contributors: simonfujdala
 Requires at least: 3.3
 Requires PHP: 5.3
 Requires Plugins: all-in-one-wp-migration
-Stable tag: 1.52.1
+Stable tag: 1.52.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -15,7 +15,7 @@ Adds S3-compatible export, import, scheduled backup, retention, and incremental 
 
 The extension requires All-in-One WP Migration 7.84 or newer. The fork uses the base plugin's supported development-build marker so its commercial extension version gate does not misidentify the independently maintained fork as an installable vendor update.
 
-The Plugins screen reports newer upstream releases for manual review, but does not offer the license-gated package as a one-click update. Vendor license activation, private license checks, and usage telemetry are disabled. Public release metadata remains enabled, and S3 requests are sent only to the endpoint configured by the administrator.
+The Plugins screen reports newer upstream releases for manual review, but does not offer another package as a one-click update. Commercial activation and telemetry code is absent. The base plugin's private update check is blocked, public release metadata remains enabled, and S3 requests are sent only to the endpoint configured by the administrator.
 
 == Installation ==
 
@@ -26,6 +26,12 @@ The Plugins screen reports newer upstream releases for manual review, but does n
 
 == Changelog ==
 
+= 1.52.2 =
+* Removed vendor ASCII branding and external sales links.
+* Removed dormant commercial activation-key plumbing.
+* Rebranded the reset fallback theme for the community fork.
+* Preserved original GPL copyright notices and compatibility-sensitive base-plugin identifiers.
+
 = 1.52.1 =
 * Disabled commercial one-click and automatic update offers for this fork.
 * Added a non-clickable upstream release indicator for maintainers.
@@ -35,7 +41,7 @@ The Plugins screen reports newer upstream releases for manual review, but does n
 
 = 1.52.0 =
 * Restored the complete extension runtime and assets.
-* Disabled vendor license activation and usage telemetry.
+* Removed commercial activation and telemetry code.
 * Added fork metadata and dependency declaration.
 * Preserved the minimum base-plugin version check at 7.84.
 

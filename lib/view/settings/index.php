@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -54,9 +48,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 								<br />
 								<input type="text" placeholder="<?php _e( 'Enter S3 Endpoint', AI1WMNE_PLUGIN_NAME ); ?>" id="ai1wmne-s3-api-endpoint" class="ai1wmne-settings-key" name="ai1wmne_s3_api_endpoint" value="<?php echo esc_attr( $api_endpoint ); ?>" />
 							</label>
-							<a href="https://help.servmask.com/knowledgebase/s3-client-endpoints/" target="_blank">
-								<?php _e( 'Where to find your S3 Endpoint', AI1WMNE_PLUGIN_NAME ); ?>
-							</a>
 						</div>
 
 						<div class="ai1wm-field">
@@ -65,9 +56,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 								<br />
 								<input type="text" placeholder="<?php _e( 'Enter DNS-style bucket+hostname:port template', AI1WMNE_PLUGIN_NAME ); ?>" id="ai1wmne-s3-bucket-template" class="ai1wmne-settings-key" name="ai1wmne_s3_bucket_template" value="<?php echo esc_attr( $bucket_template ); ?>" />
 							</label>
-							<a href="https://help.servmask.com/knowledgebase/s3-client-endpoints/" target="_blank">
-								<?php _e( 'Where to find your Bucket Template', AI1WMNE_PLUGIN_NAME ); ?>
-							</a>
 						</div>
 
 						<div class="ai1wm-field">

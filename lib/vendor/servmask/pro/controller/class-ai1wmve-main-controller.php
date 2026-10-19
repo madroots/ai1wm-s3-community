@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -45,17 +39,12 @@ if ( ! class_exists( 'Ai1wmve_Main_Controller' ) ) {
 		 */
 		protected $plugin_params_key;
 
-		/**
-		 * @var string
-		 */
-		protected $plugin_base_name;
 
 		/**
 		 * @var string
 		 */
 		protected $plugin_name;
 
-		protected $purchase_id;
 
 		/**
 		 * @var string
@@ -76,7 +65,6 @@ if ( ! class_exists( 'Ai1wmve_Main_Controller' ) ) {
 
 			$this->ai1wve_check_if_constants_are_defined();
 
-			register_activation_hook( $this->plugin_base_name, array( $this, 'ai1wmve_activation_hook' ) );
 
 			// Activate hooks
 			$this->ai1wmve_activate_actions();
@@ -92,20 +80,12 @@ if ( ! class_exists( 'Ai1wmve_Main_Controller' ) ) {
 		private function ai1wve_check_if_constants_are_defined() {
 			$message = __( '%s constant must be defined!', $this->plugin_name );
 
-			if ( ! defined( $constant = $this->plugin_prefix . '_PLUGIN_BASENAME' ) ) {
-				throw new Ai1wmve_Error_Exception( sprintf( $message, $constant ) );
-			}
-			$this->plugin_base_name = constant( $constant );
 
 			if ( ! defined( $constant = $this->plugin_prefix . '_PLUGIN_NAME' ) ) {
 				throw new Ai1wmve_Error_Exception( sprintf( $message, $constant ) );
 			}
 			$this->plugin_name = constant( $constant );
 
-			if ( ! defined( $constant = $this->plugin_prefix . '_PURCHASE_ID' ) ) {
-				throw new Ai1wmve_Error_Exception( sprintf( $message, $constant ) );
-			}
-			$this->purchase_id = constant( $constant );
 
 			if ( defined( $constant = $this->plugin_prefix . '_MIN_AI1WM_VERSION' ) ) {
 				$this->min_ai1wm_version = constant( $constant );
@@ -155,14 +135,6 @@ if ( ! class_exists( 'Ai1wmve_Main_Controller' ) ) {
 		 */
 		abstract protected function activate_actions();
 
-		/**
-		 * Activation hook callback
-		 *
-		 * @return void
-		 */
-		public function ai1wmve_activation_hook() {
-			// License activation is intentionally disabled in this fork.
-		}
 
 		/**
 		 * Initializes language domain for the plugin
@@ -229,11 +201,6 @@ if ( ! class_exists( 'Ai1wmve_Main_Controller' ) ) {
 				add_action( 'ai1wm_status_export_done', 'Ai1wmve_Schedules_Controller::log_success' );
 				add_action( 'ai1wm_status_export_error', 'Ai1wmve_Schedules_Controller::log_failed', 10, 2 );
 
-				// Register stats collect actions if URL is defined
-				if ( defined( 'AI1WMVE_STATS_URL' ) ) {
-					add_action( 'ai1wm_status_export_done', array( $this, 'ai1wmve_export_stats' ) );
-					add_action( 'ai1wm_status_import_done', array( $this, 'ai1wmve_import_stats' ) );
-				}
 
 				// Register creating backup notes for reset hub backups
 				add_action( 'ai1wm_status_export_done', array( $this, 'create_reset_backup_label' ) );
@@ -808,8 +775,8 @@ if ( ! class_exists( 'Ai1wmve_Main_Controller' ) ) {
 					'thanks_for_submitting_your_feedback' => __( 'Thanks for submitting your feedback!', $this->plugin_name ),
 					'thanks_for_submitting_your_request'  => __( 'Thanks for submitting your request!', $this->plugin_name ),
 					'want_to_delete_this_file'            => __( 'Are you sure you want to delete this file?', $this->plugin_name ),
-					'unlimited'                           => __( 'Restoring a backup is available via Unlimited extension. <a href="https://servmask.com/products/unlimited-extension" target="_blank">Get it here</a>', $this->plugin_name ),
-					'restore_from_file'                   => __( '"Restore" functionality is available in a <a href="https://servmask.com/products/unlimited-extension" target="_blank">paid extension</a>.<br />You could also download the backup and then use "Import from file".', $this->plugin_name ),
+					'unlimited'                           => __( 'Restore is provided by this independently maintained extension.', $this->plugin_name ),
+					'restore_from_file'                   => __( 'If direct restore is unavailable, download the backup and use Import from file.', $this->plugin_name ),
 					'out_of_disk_space'                   => __(
 						'There is not enough space available on the disk.<br />' .
 						'Free up %s of disk space.',
@@ -856,17 +823,6 @@ if ( ! class_exists( 'Ai1wmve_Main_Controller' ) ) {
 			$this->router();
 		}
 
-		/**
-		 * Register initial parameters
-		 *
-		 * @return void
-		 */
-		public function ai1wmve_init() {
-			if ( $this->purchase_id ) {
-				$option = strtolower( $this->plugin_prefix ) . '_plugin_key';
-				update_option( $option, $this->purchase_id );
-			}
-		}
 
 		public static function ai1wmve_pro() {
 			return Ai1wm_Template::get_content(
@@ -937,7 +893,6 @@ if ( ! class_exists( 'Ai1wmve_Main_Controller' ) ) {
 		 * @return void
 		 */
 		protected function ai1wmve_activate_actions() {
-			add_action( 'admin_init', array( $this, 'ai1wmve_init' ) );
 			add_action( 'admin_init', array( $this, 'ai1wmve_load_textdomain' ) );
 			add_action( 'admin_init', array( $this, 'ai1wmve_router' ) );
 			add_action( 'admin_head', array( $this, 'ai1wmve_admin_head' ) );
@@ -968,33 +923,6 @@ if ( ! class_exists( 'Ai1wmve_Main_Controller' ) ) {
 			return AI1WMVE_MAX_FILE_SIZE;
 		}
 
-		public function ai1wmve_export_stats( $params ) {
-			if ( ! isset( $params[ $this->plugin_params_key ] ) ) {
-				return;
-			}
-
-			if ( isset( $params['ai1wm_manual_export'] ) ) {
-				$this->ai1wmve_send_stats( 'export' );
-			}
-		}
-
-		public function ai1wmve_import_stats( $params ) {
-			if ( ! isset( $params[ $this->plugin_params_key ] ) ) {
-				return;
-			}
-
-			if ( isset( $params['ai1wm_manual_restore'] ) ) {
-				$this->ai1wmve_send_stats( 'restore' );
-			}
-
-			if ( isset( $params['ai1wm_manual_import'] ) ) {
-				$this->ai1wmve_send_stats( 'import' );
-			}
-		}
-
-		protected function ai1wmve_send_stats( $action ) {
-			// Usage telemetry is intentionally disabled in this fork.
-		}
 
 		/**
 		 * Outputs menu icon between head tags

@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -196,9 +190,9 @@ class Ai1wmne_S3_Client {
 		try {
 			$api->make_request();
 		} catch ( Ai1wmne_Access_Denied_Exception $e ) {
-			throw new Ai1wmne_Access_Denied_Exception( __( 'Please check your bucket policy. Access Denied. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#AccessDenied" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ) );
+			throw new Ai1wmne_Access_Denied_Exception( __( 'Please check your bucket policy. Access Denied.', AI1WMNE_PLUGIN_NAME ) );
 		} catch ( Ai1wmne_All_Access_Disabled_Exception $e ) {
-			throw new Ai1wmne_All_Access_Disabled_Exception( __( 'Please check your bucket policy. All Access Disabled. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#AllAccessDisabled" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ) );
+			throw new Ai1wmne_All_Access_Disabled_Exception( __( 'Please check your bucket policy. All Access Disabled.', AI1WMNE_PLUGIN_NAME ) );
 		} catch ( Ai1wmne_Error_Exception $e ) {
 			return false;
 		}
@@ -258,9 +252,9 @@ class Ai1wmne_S3_Client {
 		try {
 			$response = $api->make_request( true );
 		} catch ( Ai1wmne_Invalid_Access_Key_Id_Exception $e ) {
-			throw new Ai1wmne_Invalid_Access_Key_Id_Exception( __( 'The access key that you have provided is incorrect. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#InvalidAccessKeyId" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ) );
+			throw new Ai1wmne_Invalid_Access_Key_Id_Exception( __( 'The access key that you have provided is incorrect.', AI1WMNE_PLUGIN_NAME ) );
 		} catch ( Ai1wmne_Signature_Does_Not_Match_Exception $e ) {
-			throw new Ai1wmne_Signature_Does_Not_Match_Exception( __( 'The secret key that you have provided is incorrect. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#SignatureDoesNotMatch" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ) );
+			throw new Ai1wmne_Signature_Does_Not_Match_Exception( __( 'The secret key that you have provided is incorrect.', AI1WMNE_PLUGIN_NAME ) );
 		} catch ( Ai1wmne_Access_Denied_Exception $e ) {
 			// In case user doesn't have ListAllMyBuckets permission
 		} catch ( Ai1wmne_All_Access_Disabled_Exception $e ) {

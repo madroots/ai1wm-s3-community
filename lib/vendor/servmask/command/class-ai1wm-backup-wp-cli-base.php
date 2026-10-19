@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -44,11 +38,8 @@ if ( defined( 'WP_CLI' ) && ! class_exists( 'Ai1wm_Backup_WP_CLI_Base' ) ) {
 			}
 
 			if ( is_multisite() && ! defined( 'AI1WMME_PLUGIN_NAME' ) ) {
-				WP_CLI::error_multi_line(
-					array(
-						__( 'WordPress Multisite is supported via our All-in-One WP Migration Multisite Extension.', AI1WM_PLUGIN_NAME ),
-						__( 'You can get a copy of it here: https://servmask.com/products/multisite-extension', AI1WM_PLUGIN_NAME ),
-					)
+				WP_CLI::error(
+					__( 'WordPress Multisite requires a compatible multisite migration extension.', AI1WM_PLUGIN_NAME )
 				);
 				exit;
 			}

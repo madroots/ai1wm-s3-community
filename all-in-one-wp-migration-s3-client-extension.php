@@ -5,7 +5,7 @@
  * Description: Independently maintained GPL fork of the S3 Client extension for All-in-One WP Migration.
  * Author: Simon Fujdala
  * Author URI: https://best-web.sk/
- * Version: 1.52.1
+ * Version: 1.52.2
  * Text Domain: all-in-one-wp-migration-s3-client-extension
  * Domain Path: /languages
  * Network: True
@@ -28,12 +28,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -60,10 +54,10 @@ require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'constants.php';
 // Include functions
 require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'functions.php';
 
-// Keep upstream release metadata visible to maintainers, but never offer the
-// commercial package as an automatic or one-click update for this fork.
-add_filter( 'site_transient_update_plugins', 'ai1wmne_filter_vendor_update', PHP_INT_MAX );
-add_filter( 'pre_http_request', 'ai1wmne_block_vendor_license_check', PHP_INT_MAX, 3 );
+// Keep upstream release metadata visible without allowing another package to
+// overwrite this independently maintained fork.
+add_filter( 'site_transient_update_plugins', 'ai1wmne_filter_managed_update', PHP_INT_MAX );
+add_filter( 'pre_http_request', 'ai1wmne_block_private_update_check', PHP_INT_MAX, 3 );
 
 // Include exceptions
 require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'exceptions.php';

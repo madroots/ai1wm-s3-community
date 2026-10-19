@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -117,7 +111,7 @@ class Ai1wmve_Reset_Themes {
 			return static::ensure_theme_installed( $theme_slug, $all_themes );
 		}
 
-		// Fallback to ServMask-Theme if install fails
+		// Fall back to the minimal community theme if installation fails.
 		return static::create_default_theme();
 	}
 
@@ -172,7 +166,7 @@ class Ai1wmve_Reset_Themes {
 			}
 		}
 
-		// Fallback to ServMask-Theme if install fails
+		// Fall back to the minimal community theme if installation fails.
 		return static::create_default_theme();
 	}
 
@@ -185,17 +179,17 @@ class Ai1wmve_Reset_Themes {
 				PHP_EOL,
 				array(
 					'/*',
-					'Theme Name: SevMask',
-					'Theme URI: https://servmask.com/',
-					'Author: ServMask',
-					'Author URI: https://servmask.com/',
-					'Description: ServMask Default Theme',
+					'Theme Name: AI1WM S3 Community',
+					'Theme URI: https://best-web.sk/',
+					'Author: Simon Fujdala',
+					'Author URI: https://best-web.sk/',
+					'Description: Minimal fallback theme used after a site reset',
 					'Version: 1.0',
 					'Requires at least: 3.3',
 					'Tested up to: 6.4',
 					'Requires PHP: 5.3',
-					'License: GNU General Public License v2 or later',
-					'License URI: http://www.gnu.org/licenses/gpl-2.0.html',
+					'License: GNU General Public License v3 or later',
+					'License URI: https://www.gnu.org/licenses/gpl-3.0.html',
 					'*/',
 				)
 			)

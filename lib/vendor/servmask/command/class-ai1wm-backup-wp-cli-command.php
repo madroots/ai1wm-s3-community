@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -165,7 +159,7 @@ if ( class_exists( 'Ai1wm_Backup_WP_CLI_Base' ) && ! class_exists( 'Ai1wm_Backup
 		 *
 		 * ## EXAMPLES
 		 *
-		 * $ wp ai1wm browse-backup wp-servmask.test-20220316-090649-a7baqq.wpress
+		 * $ wp ai1wm browse-backup wp-example.test-20220316-090649-a7baqq.wpress
 		 * +------------------------------------------------+--------------+-----------+
 		 * | File name                                      | Date created | Size      |
 		 * +------------------------------------------------+--------------+-----------+
@@ -254,11 +248,11 @@ if ( class_exists( 'Ai1wm_Backup_WP_CLI_Base' ) && ! class_exists( 'Ai1wm_Backup
 		 * : The path for backup file
 		 *
 		 * [--extract-path]
-		 * : Extract backup files to provided path (wp ai1wm extract-backup wp-servmask.test-20220316-090649-a7baqq.wpress --extract-path=/tmp)
+		 * : Extract backup files to provided path (wp ai1wm extract-backup wp-example.test-20220316-090649-a7baqq.wpress --extract-path=/tmp)
 		 *
 		 * ## EXAMPLES
 		 *
-		 * $ wp ai1wm extract-backup wp-servmask.test-20220316-090649-a7baqq.wpress --extract-path=/tmp
+		 * $ wp ai1wm extract-backup wp-example.test-20220316-090649-a7baqq.wpress --extract-path=/tmp
 		 *
 		 * @subcommand extract-backup
 		 */

@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -86,16 +80,15 @@ function ai1wmne_aws_region_name( $default = null ) {
 }
 
 /**
- * Remove commercial update metadata for this independently maintained fork.
+ * Remove third-party update metadata for this independently maintained fork.
  *
- * The base plugin's updater points to a license-gated vendor package. Leaving
- * that response in place offers an update that cannot be downloaded and could
- * overwrite the fork if commercial access is later restored.
+ * The base plugin advertises a different package at this plugin's basename.
+ * Leaving that response in place can overwrite the fork.
  *
  * @param  object $transient WordPress plugin update transient
  * @return object
  */
-function ai1wmne_filter_vendor_update( $transient ) {
+function ai1wmne_filter_managed_update( $transient ) {
 	if ( ! is_object( $transient ) ) {
 		return $transient;
 	}
@@ -108,19 +101,16 @@ function ai1wmne_filter_vendor_update( $transient ) {
 }
 
 /**
- * Prevent the base plugin from sending site and administrator details to the
- * commercial S3 license-check endpoint. Public release metadata remains
- * available so maintainers can see when upstream publishes a new version.
+ * Prevent the base plugin from sending site and administrator details to its
+ * private extension-update check. Public release metadata remains available.
  *
  * @param  mixed  $response Short-circuit response
  * @param  array  $args     HTTP request arguments
  * @param  string $url      Request URL
  * @return mixed
  */
-function ai1wmne_block_vendor_license_check( $response, $args, $url ) {
-	$check_url = 'https://redirect.wp-migration.com/v1/check/s3-client-extension';
-
-	if ( strpos( $url, $check_url ) !== 0 ) {
+function ai1wmne_block_private_update_check( $response, $args, $url ) {
+	if ( ! defined( 'AI1WMNE_PLUGIN_CHECK' ) || strpos( $url, AI1WMNE_PLUGIN_CHECK ) !== 0 ) {
 		return $response;
 	}
 

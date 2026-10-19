@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -230,15 +224,15 @@ class Ai1wmne_S3_Curl {
 
 	public function __construct() {
 		if ( ! extension_loaded( 'curl' ) ) {
-			throw new Ai1wmne_Error_Exception( __( 'S3 Client Extension requires PHP cURL extension. <a href="https://help.servmask.com/knowledgebase/curl-missing-in-php-installation/" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ) );
+			throw new Ai1wmne_Error_Exception( __( 'S3 Client Extension requires the PHP cURL extension.', AI1WMNE_PLUGIN_NAME ) );
 		}
 
 		if ( ! extension_loaded( 'libxml' ) ) {
-			throw new Ai1wmne_Error_Exception( __( 'S3 Client Extension requires PHP libxml extension. <a href="https://help.servmask.com/knowledgebase/libxml-missing-in-php-installation/" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ) );
+			throw new Ai1wmne_Error_Exception( __( 'S3 Client Extension requires the PHP libxml extension.', AI1WMNE_PLUGIN_NAME ) );
 		}
 
 		if ( ! extension_loaded( 'simplexml' ) ) {
-			throw new Ai1wmne_Error_Exception( __( 'S3 Client Extension requires PHP SimpleXML extension. <a href="https://help.servmask.com/knowledgebase/simplexml-missing-in-php-installation/" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ) );
+			throw new Ai1wmne_Error_Exception( __( 'S3 Client Extension requires the PHP SimpleXML extension.', AI1WMNE_PLUGIN_NAME ) );
 		}
 
 		// Default configuration
@@ -577,7 +571,7 @@ class Ai1wmne_S3_Curl {
 		$response = curl_exec( $this->handler );
 		if ( $response === false ) {
 			if ( ( $errno = curl_errno( $this->handler ) ) ) {
-				throw new Ai1wmne_Connect_Exception( sprintf( __( 'Unable to connect to S3 Client. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#%s" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $errno, $errno ) );
+				throw new Ai1wmne_Connect_Exception( sprintf( __( 'Unable to connect to S3 Client. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $errno ) );
 			}
 		}
 
@@ -598,11 +592,11 @@ class Ai1wmne_S3_Curl {
 		// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$http_code = curl_getinfo( $this->handler, CURLINFO_HTTP_CODE );
 		if ( $http_code === 429 ) {
-			throw new Ai1wmne_Rate_Limit_Exception( sprintf( __( 'Too many requests. Please try again later. Error code: %s <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#%s" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $http_code, $http_code ) );
+			throw new Ai1wmne_Rate_Limit_Exception( sprintf( __( 'Too many requests. Please try again later. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $http_code ) );
 		}
 
 		if ( $http_code >= 500 ) {
-			throw new Ai1wmne_Internal_Server_Error_Exception( sprintf( __( 'Internal Server Error. Please try again later. Error code: %s <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#%s" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $http_code, $http_code ) );
+			throw new Ai1wmne_Internal_Server_Error_Exception( sprintf( __( 'Internal Server Error. Please try again later. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $http_code ) );
 		}
 
 		if ( $redirect === true ) {
@@ -647,79 +641,79 @@ class Ai1wmne_S3_Curl {
 							}
 
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_Authorization_Header_Malformed_Exception( sprintf( __( 'Please check your connection settings. %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#AuthorizationHeaderMalformed" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_Authorization_Header_Malformed_Exception( sprintf( __( 'Please check your connection settings. %s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_Authorization_Header_Malformed_Exception( sprintf( __( 'Please check your connection settings. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#AuthorizationHeaderMalformed" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_Authorization_Header_Malformed_Exception( sprintf( __( 'Please check your connection settings. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						case 'InvalidAccessKeyId':
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_Invalid_Access_Key_Id_Exception( sprintf( __( 'The access key that you have provided is incorrect. %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#InvalidAccessKeyId" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_Invalid_Access_Key_Id_Exception( sprintf( __( 'The access key that you have provided is incorrect. %s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_Invalid_Access_Key_Id_Exception( sprintf( __( 'The access key that you have provided is incorrect. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#InvalidAccessKeyId" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_Invalid_Access_Key_Id_Exception( sprintf( __( 'The access key that you have provided is incorrect. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						case 'InvalidBucketName':
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_Invalid_Bucket_Name_Exception( sprintf( __( 'The bucket name contains invalid characters. %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#InvalidBucketName" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_Invalid_Bucket_Name_Exception( sprintf( __( 'The bucket name contains invalid characters. %s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_Invalid_Bucket_Name_Exception( sprintf( __( 'The bucket name contains invalid characters. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#InvalidBucketName" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_Invalid_Bucket_Name_Exception( sprintf( __( 'The bucket name contains invalid characters. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						case 'SignatureDoesNotMatch':
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_Signature_Does_Not_Match_Exception( sprintf( __( 'The secret key that you have provided is incorrect. %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#SignatureDoesNotMatch" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_Signature_Does_Not_Match_Exception( sprintf( __( 'The secret key that you have provided is incorrect. %s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_Signature_Does_Not_Match_Exception( sprintf( __( 'The secret key that you have provided is incorrect. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#SignatureDoesNotMatch" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_Signature_Does_Not_Match_Exception( sprintf( __( 'The secret key that you have provided is incorrect. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						case 'AccessDenied':
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_Access_Denied_Exception( sprintf( __( 'Please check your bucket policy. %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#AccessDenied" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_Access_Denied_Exception( sprintf( __( 'Please check your bucket policy. %s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_Access_Denied_Exception( sprintf( __( 'Please check your bucket policy. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#AccessDenied" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_Access_Denied_Exception( sprintf( __( 'Please check your bucket policy. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						case 'AllAccessDisabled':
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_All_Access_Disabled_Exception( sprintf( __( 'Please check your bucket policy. %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#AllAccessDisabled" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_All_Access_Disabled_Exception( sprintf( __( 'Please check your bucket policy. %s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_All_Access_Disabled_Exception( sprintf( __( 'Please check your bucket policy. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#AllAccessDisabled" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_All_Access_Disabled_Exception( sprintf( __( 'Please check your bucket policy. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						case 'NoSuchBucket':
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_No_Such_Bucket_Exception( sprintf( __( 'Please check your bucket name. %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#NoSuchBucket" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_No_Such_Bucket_Exception( sprintf( __( 'Please check your bucket name. %s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_No_Such_Bucket_Exception( sprintf( __( 'Please check your bucket name. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#NoSuchBucket" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_No_Such_Bucket_Exception( sprintf( __( 'Please check your bucket name. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						case 'BucketAlreadyExists':
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_Bucket_Already_Exists_Exception( sprintf( __( 'Bucket name already exists in another region or owned by another user. %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#BucketAlreadyExists" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_Bucket_Already_Exists_Exception( sprintf( __( 'Bucket name already exists in another region or is owned by another user. %s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_Bucket_Already_Exists_Exception( sprintf( __( 'Bucket name already exists in another region or owned by another user. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#BucketAlreadyExists" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_Bucket_Already_Exists_Exception( sprintf( __( 'Bucket name already exists in another region or is owned by another user. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						case 'IllegalLocationConstraintException':
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_Location_Constraint_Exception( sprintf( __( 'The region name that you have provided is incorrect. %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#IllegalLocationConstraintException" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_Location_Constraint_Exception( sprintf( __( 'The region name that you have provided is incorrect. %s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_Location_Constraint_Exception( sprintf( __( 'The region name that you have provided is incorrect. Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#IllegalLocationConstraintException" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_Location_Constraint_Exception( sprintf( __( 'The region name that you have provided is incorrect. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						case 'RequestTimeout':
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_Request_Timeout_Exception( sprintf( __( '%s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#RequestTimeout" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
+								throw new Ai1wmne_Request_Timeout_Exception( sprintf( __( '%s.', AI1WMNE_PLUGIN_NAME ), $data->Message ) );
 							} else {
-								throw new Ai1wmne_Request_Timeout_Exception( sprintf( __( 'Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#RequestTimeout" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
+								throw new Ai1wmne_Request_Timeout_Exception( sprintf( __( 'Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 
 						default:
 							if ( isset( $data->Message ) ) {
-								throw new Ai1wmne_Error_Exception( sprintf( __( '%s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#%s" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Message, $data->Code ) );
+								throw new Ai1wmne_Error_Exception( sprintf( __( '%s. Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Message, $data->Code ) );
 							} else {
-								throw new Ai1wmne_Error_Exception( sprintf( __( 'Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#%s" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $data->Code, $data->Code ) );
+								throw new Ai1wmne_Error_Exception( sprintf( __( 'Error code: %s.', AI1WMNE_PLUGIN_NAME ), $data->Code ) );
 							}
 					}
 				}
@@ -730,9 +724,9 @@ class Ai1wmne_S3_Curl {
 		// HTTP errors
 		if ( $http_code >= 400 ) {
 			if ( isset( $this->messages[ $http_code ] ) ) {
-				throw new Ai1wmne_Error_Exception( sprintf( __( '%s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#%s" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $this->messages[ $http_code ], $http_code ) );
+				throw new Ai1wmne_Error_Exception( __( $this->messages[ $http_code ], AI1WMNE_PLUGIN_NAME ) );
 			} else {
-				throw new Ai1wmne_Error_Exception( sprintf( __( 'Error code: %s. <a href="https://help.servmask.com/knowledgebase/s3-client-error-codes/#%s" target="_blank">Technical details</a>', AI1WMNE_PLUGIN_NAME ), $http_code, $http_code ) );
+				throw new Ai1wmne_Error_Exception( sprintf( __( 'Error code: %s.', AI1WMNE_PLUGIN_NAME ), $http_code ) );
 			}
 		}
 

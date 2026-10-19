@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -33,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // "develop" is the base plugin's supported marker for independently
 // maintained development builds; the public fork version remains semantic.
 define( 'AI1WMNE_VERSION', 'develop' );
-define( 'AI1WMNE_FORK_VERSION', '1.52.1' );
+define( 'AI1WMNE_FORK_VERSION', '1.52.2' );
 define( 'AI1WMNE_UPSTREAM_VERSION', '1.51' );
 define( 'AI1WMNE_MAX_REVIEWED_AI1WM_VERSION', '7.112' );
 
@@ -102,6 +96,5 @@ define( 'AI1WMNE_MIN_AI1WM_VERSION', '7.84' );
 // ================================
 define( 'AI1WMNE_PRO_INCREMENTAL', 1 );
 
-// Kept defined for compatibility with the shared extension framework.
-// An empty value disables license activation and usage telemetry.
+// Required by the base plugin's extension registry; contains no credential.
 define( 'AI1WMNE_PURCHASE_ID', '' );

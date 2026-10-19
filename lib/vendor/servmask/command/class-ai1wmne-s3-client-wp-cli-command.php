@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -107,7 +101,7 @@ if ( defined( 'WP_CLI' ) && class_exists( 'Ai1wm_Backup_WP_CLI_Base' ) ) {
 		 * Uploading wordpress-20190509-152915-654.wpress (33 MB) [100% complete]
 		 * Success: Backup complete.
 		 * Backup file: wordpress-20190509-152915-654.wpress
-		 * Backup location: [region: us-east-1] [bucket: ai1wm-servmask-com] [path: backups/daily/ai1wm/wordpress-20190509-152915-654.wpress]
+		 * Backup location: [region: us-east-1] [bucket: ai1wm-example-com] [path: backups/daily/ai1wm/wordpress-20190509-152915-654.wpress]
 		 *
 		 * @subcommand backup
 		 */

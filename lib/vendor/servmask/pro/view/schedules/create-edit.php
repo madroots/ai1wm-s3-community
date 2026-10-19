@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -138,10 +132,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</div>
 
 							<div class="ai1wm-event-row" v-if="storageLink">
-								<a :href="storageLink" v-if="this.isServMaskLink" target="_blank"
-									v-html="'<?php _e( 'To use <strong>%s</strong> storage, purchase it here.', AI1WM_PLUGIN_NAME ); ?>'.replace('%s', storageName)"></a>
-								<a :href="storageLink" v-else
-									v-html="'<?php _e( 'To use <strong>%s</strong> storage, you need to configure it first.', AI1WM_PLUGIN_NAME ); ?>'.replace('%s', storageName)"></a>
+								<a :href="storageLink" target="_blank"
+									v-html="'<?php _e( 'Configure <strong>%s</strong> storage.', AI1WM_PLUGIN_NAME ); ?>'.replace('%s', storageName)"></a>
 							</div>
 
 						</div>

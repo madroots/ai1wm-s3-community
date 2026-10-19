@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -52,8 +46,6 @@ define( 'AI1WMVE_UTILS_PATH', AI1WMVE_PATH . DIRECTORY_SEPARATOR . 'utils' );
 // =============
 define( 'AI1WMVE_TEMPLATES_PATH', AI1WMVE_PATH . DIRECTORY_SEPARATOR . 'view' );
 
-// Vendor activation and telemetry endpoints are intentionally not defined.
-
 // =================
 // = Max File Size =
 // =================
@@ -67,7 +59,7 @@ define( 'AI1WMVE_SCHEDULES_OPTIONS', 'ai1wmve_schedule_events' );
 // ====================
 // = Reset Theme Name =
 // ====================
-define( 'AI1WMVE_RESET_THEME_NAME', 'servmask' );
+define( 'AI1WMVE_RESET_THEME_NAME', 'ai1wm-s3-community' );
 
 // ==========================
 // = Reset Theme Style Name =

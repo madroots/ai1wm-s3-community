@@ -15,12 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * ███████╗███████╗██████╗ ██╗   ██╗███╗   ███╗ █████╗ ███████╗██╗  ██╗
- * ██╔════╝██╔════╝██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔════╝██║ ██╔╝
- * ███████╗█████╗  ██████╔╝██║   ██║██╔████╔██║███████║███████╗█████╔╝
- * ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║╚██╔╝██║██╔══██║╚════██║██╔═██╗
- * ███████║███████╗██║  ██║ ╚████╔╝ ██║ ╚═╝ ██║██║  ██║███████║██║  ██╗
- * ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -186,6 +180,17 @@ if ( ! class_exists( 'Ai1wmve_Schedules_Controller' ) ) {
 		public static function buttons() {
 			$buttons = array();
 			foreach ( apply_filters( 'ai1wm_export_buttons', array() ) as $button ) {
+				if ( preg_match( '/\shref="([^"]*)"/', $button, $matches ) ) {
+					$link       = html_entity_decode( $matches[1], ENT_QUOTES, 'UTF-8' );
+					$link_host  = parse_url( $link, PHP_URL_HOST );
+					$admin_host = parse_url( network_admin_url(), PHP_URL_HOST );
+
+					// Unavailable providers point to external sales pages.
+					if ( $link_host && strcasecmp( $link_host, $admin_host ) !== 0 ) {
+						continue;
+					}
+				}
+
 				$button = str_replace( ' target="_blank"', '', $button );
 				$button = str_replace( '<a', '<option', $button );
 				$button = str_replace( '</a', '</option', $button );
