@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // "develop" is the base plugin's supported marker for independently
 // maintained development builds; the public fork version remains semantic.
 define( 'AI1WMNE_VERSION', 'develop' );
-define( 'AI1WMNE_FORK_VERSION', '1.52.7' );
+define( 'AI1WMNE_FORK_VERSION', '1.52.8' );
 define( 'AI1WMNE_UPSTREAM_VERSION', '1.51' );
 define( 'AI1WMNE_MAX_REVIEWED_AI1WM_VERSION', '7.112' );
 

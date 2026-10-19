@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.8
+
+- Published a maintenance release for verifying update delivery from an installed 1.52.7.
+
 ## 1.52.7
 
 - Added a public release-page fallback when the GitHub API is unavailable or rate-limited.
