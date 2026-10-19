@@ -167,6 +167,80 @@ function ai1wmne_refresh_managed_update( $transient ) {
 }
 
 /**
+ * Read this fork's stored update version from the plugin update transient.
+ *
+ * @param  object $transient WordPress plugin update transient
+ * @return string|null
+ */
+function ai1wmne_stored_update_version( $transient ) {
+	foreach ( array( 'response', 'no_update' ) as $key ) {
+		if ( empty( $transient->{$key}[ AI1WMNE_PLUGIN_BASENAME ] ) ) {
+			continue;
+		}
+
+		$details = $transient->{$key}[ AI1WMNE_PLUGIN_BASENAME ];
+		if ( ! ai1wmne_is_community_update( $details ) ) {
+			continue;
+		}
+
+		return is_object( $details ) ? $details->new_version : $details['new_version'];
+	}
+
+	return null;
+}
+
+/**
+ * Clear cached update data when an administrator requests a fresh check.
+ *
+ * WordPress forces core checks with `?force-check=1`, but a stored
+ * `update_plugins` transient and this plugin's release cache both suppress a
+ * newly published release. Removing them lets the pending plugin check run
+ * immediately and refetch the latest GitHub release.
+ *
+ * @return void
+ */
+function ai1wmne_force_update_refresh() {
+	if ( empty( $_GET['force-check'] ) || ! current_user_can( 'update_plugins' ) ) {
+		return;
+	}
+
+	delete_site_transient( 'update_plugins' );
+	delete_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE );
+}
+
+/**
+ * Reconcile the Plugins screen with the latest cached GitHub release.
+ *
+ * WordPress refreshes plugin updates at most once an hour on this screen, so a
+ * newly published release would otherwise stay hidden until that check runs.
+ * This keeps the stored transient current, and the release lookup itself is
+ * cached to avoid repeated GitHub requests.
+ *
+ * @return void
+ */
+function ai1wmne_sync_plugins_screen() {
+	if ( ! current_user_can( 'update_plugins' ) ) {
+		return;
+	}
+
+	$transient = get_site_transient( 'update_plugins' );
+	if ( ! is_object( $transient ) ) {
+		return;
+	}
+
+	$release = ai1wmne_github_release();
+	if ( ! $release ) {
+		return;
+	}
+
+	if ( ai1wmne_stored_update_version( $transient ) === $release['version'] ) {
+		return;
+	}
+
+	set_site_transient( 'update_plugins', ai1wmne_refresh_managed_update( $transient ) );
+}
+
+/**
  * Prevent the base plugin from sending site and administrator details to its
  * private extension-update check. Public release metadata remains available.
  *
@@ -213,7 +287,7 @@ function ai1wmne_upstream_version() {
 /**
  * Read the latest stable GitHub release and locate its installable ZIP asset.
  *
- * Successful responses are cached for one hour. Failures are cached for ten
+ * Successful responses are cached for ten minutes. Failures are cached for ten
  * minutes to avoid repeatedly hitting the unauthenticated GitHub API limit.
  *
  * @return array|null
@@ -276,7 +350,7 @@ function ai1wmne_github_release() {
 		'body'         => isset( $data['body'] ) ? $data['body'] : '',
 	);
 
-	set_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE, array( 'release' => $release ), 60 * 60 );
+	set_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE, array( 'release' => $release ), 10 * 60 );
 	return $release;
 }
 

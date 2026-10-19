@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.52.5
+
+- Reconcile the Plugins screen with the latest GitHub release on each visit instead of waiting for the hourly WordPress check.
+- Clear the plugin update transient and release cache when an administrator requests a fresh update check.
+- Reduced the successful GitHub release cache from one hour to ten minutes.
+
 ## 1.52.4
 
 - Published a maintenance release to exercise GitHub-powered WordPress update delivery.
