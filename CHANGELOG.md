@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.12
+
+- Published a maintenance release for verifying the transient-read fix from an installed 1.52.11.
+
 ## 1.52.11
 
 - Apply the cached GitHub release on every update-transient read, so security or update-manager plugins that strip or short-circuit the transient can no longer hide the update.
