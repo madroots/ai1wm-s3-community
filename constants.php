@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // "develop" is the base plugin's supported marker for independently
 // maintained development builds; the public fork version remains semantic.
 define( 'AI1WMNE_VERSION', 'develop' );
-define( 'AI1WMNE_FORK_VERSION', '1.52.2' );
+define( 'AI1WMNE_FORK_VERSION', '1.52.3' );
 define( 'AI1WMNE_UPSTREAM_VERSION', '1.51' );
 define( 'AI1WMNE_MAX_REVIEWED_AI1WM_VERSION', '7.112' );
 
@@ -35,6 +35,13 @@ define( 'AI1WMNE_MAX_REVIEWED_AI1WM_VERSION', '7.112' );
 // = Plugin Name =
 // ===============
 define( 'AI1WMNE_PLUGIN_NAME', 'all-in-one-wp-migration-s3-client-extension' );
+
+// =========================
+// = GitHub Release Updates =
+// =========================
+define( 'AI1WMNE_GITHUB_REPOSITORY_URL', 'https://github.com/madroots/ai1wm-s3-community' );
+define( 'AI1WMNE_GITHUB_RELEASE_API', 'https://api.github.com/repos/madroots/ai1wm-s3-community/releases/latest' );
+define( 'AI1WMNE_GITHUB_RELEASE_CACHE', 'ai1wmne_github_release' );
 
 // ============
 // = Lib Path =

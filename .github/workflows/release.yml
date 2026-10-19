@@ -1,0 +1,89 @@
+name: Release WordPress plugin
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Validate tag and plugin versions
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          if [[ ! "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            printf 'Release tag must match vMAJOR.MINOR.PATCH: %s\n' "${tag}" >&2
+            exit 1
+          fi
+
+          version="${tag#v}"
+          plugin_version="$(php -r '$source = file_get_contents("all-in-one-wp-migration-s3-client-extension.php"); if (!preg_match("/^ \\* Version: ([^\\r\\n]+)$/m", $source, $match)) { exit(1); } echo trim($match[1]);')"
+          readme_version="$(php -r '$source = file_get_contents("readme.txt"); if (!preg_match("/^Stable tag: ([^\\r\\n]+)$/m", $source, $match)) { exit(1); } echo trim($match[1]);')"
+          version_file="$(tr -d '\r\n' < VERSION)"
+          constant_version="$(php -r '$source = file_get_contents("constants.php"); if (!preg_match("/AI1WMNE_FORK_VERSION[^0-9]*([0-9]+\\.[0-9]+\\.[0-9]+)/", $source, $match)) { exit(1); } echo $match[1];')"
+
+          for declared_version in "${plugin_version}" "${readme_version}" "${version_file}" "${constant_version}"; do
+            if [[ "${declared_version}" != "${version}" ]]; then
+              printf 'Tag %s does not match declared version %s\n' "${tag}" "${declared_version}" >&2
+              exit 1
+            fi
+          done
+
+      - name: Lint PHP sources
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          while IFS= read -r -d '' file; do
+            php -l "${file}" >/dev/null
+          done < <(find . -path './.git' -prune -o -name '*.php' -print0)
+
+      - name: Build installable ZIP
+        id: package
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          slug='all-in-one-wp-migration-s3-client-extension'
+          version="${GITHUB_REF_NAME#v}"
+          asset="${slug}-${version}.zip"
+          checksum="${asset}.sha256"
+          stage="$(mktemp -d)"
+          trap 'rm -rf "${stage}"' EXIT
+
+          mkdir -p "${stage}/${slug}"
+          rsync -a --exclude='.git/' --exclude='.github/' ./ "${stage}/${slug}/"
+          (
+            cd "${stage}"
+            zip -qr "${GITHUB_WORKSPACE}/${asset}" "${slug}"
+          )
+
+          unzip -tqq "${asset}"
+          printf '%s  %s\n' "$(sha256sum "${asset}" | cut -d ' ' -f 1)" "${asset}" > "${checksum}"
+
+          printf 'asset=%s\n' "${asset}" >> "${GITHUB_OUTPUT}"
+          printf 'checksum=%s\n' "${checksum}" >> "${GITHUB_OUTPUT}"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          gh release create "${GITHUB_REF_NAME}" \
+            "${{ steps.package.outputs.asset }}" \
+            "${{ steps.package.outputs.checksum }}" \
+            --verify-tag \
+            --generate-notes \
+            --title "${GITHUB_REF_NAME}"

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.52.3
+
+- Added native WordPress updates from public GitHub Releases.
+- Added a tag-driven GitHub Actions workflow that validates versions and publishes an installable ZIP plus SHA-256 checksum.
+
 ## 1.52.2
 
 - Removed vendor ASCII branding and external sales links.
