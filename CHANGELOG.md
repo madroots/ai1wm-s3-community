@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.52.9
+
+- Added a nonce-protected "Check for updates" action to the plugin row that clears both caches and checks immediately.
+- Show the last GitHub lookup result or failure reason permanently in the plugin row.
+- Documented the plugin-row check as the primary troubleshooting step.
+
 ## 1.52.8
 
 - Published a maintenance release for verifying update delivery from an installed 1.52.7.

@@ -3,7 +3,7 @@ Contributors: simonfujdala
 Requires at least: 3.3
 Requires PHP: 5.3
 Requires Plugins: all-in-one-wp-migration
-Stable tag: 1.52.8
+Stable tag: 1.52.9
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -26,15 +26,19 @@ The Plugins screen reports newer upstream releases for manual review, but does n
 
 == Updates ==
 
-Stable updates are distributed from this repository's public GitHub Releases. A release is created only from a version tag such as `v1.52.8`; ordinary branch pushes do not publish WordPress updates.
+Stable updates are distributed from this repository's public GitHub Releases. A release is created only from a version tag such as `v1.52.9`; ordinary branch pushes do not publish WordPress updates.
 
 The release must contain `all-in-one-wp-migration-s3-client-extension-VERSION.zip`. WordPress refreshes GitHub metadata during normal plugin update checks, on each Plugins screen visit, and on the Updates screen. The GitHub API is used first, with the public release page redirect as a fallback; results are cached for ten minutes.
 
-Clicking "Check again" on Dashboard > Updates clears both update caches and forces an immediate plugin update check. If the release cannot be fetched or WordPress does not register it, the Plugins and Updates screens show a warning with the exact reason.
+For an immediate check, use the "Check for updates" action in this plugin's row on Plugins. It clears both caches and reloads the screen. The row also prints the last GitHub lookup result or the exact failure reason. Clicking "Check again" on Dashboard > Updates performs the same forced refresh.
 
 Release procedure: update the plugin header, `AI1WMNE_FORK_VERSION`, `VERSION`, and Stable tag; commit and push; then run `git tag -a vVERSION -m "Release vVERSION"` and `git push origin vVERSION`.
 
 == Changelog ==
+
+= 1.52.9 =
+* Added a nonce-protected "Check for updates" action to the plugin row.
+* Show the last GitHub lookup result or failure reason in the plugin row.
 
 = 1.52.8 =
 * Published a maintenance release for verifying update delivery from an installed 1.52.7.

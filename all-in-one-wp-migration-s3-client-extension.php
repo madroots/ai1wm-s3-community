@@ -5,7 +5,7 @@
  * Description: Independently maintained GPL fork of the S3 Client extension for All-in-One WP Migration.
  * Author: Simon Fujdala
  * Author URI: https://best-web.sk/
- * Version: 1.52.8
+ * Version: 1.52.9
  * Text Domain: all-in-one-wp-migration-s3-client-extension
  * Domain Path: /languages
  * Network: True
@@ -59,6 +59,10 @@ require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'functions.php';
 add_filter( 'site_transient_update_plugins', 'ai1wmne_filter_managed_update', PHP_INT_MAX );
 add_filter( 'pre_set_site_transient_update_plugins', 'ai1wmne_refresh_managed_update', PHP_INT_MAX );
 add_action( 'admin_init', 'ai1wmne_force_update_refresh', 1 );
+add_action( 'admin_init', 'ai1wmne_manual_update_check', 0 );
+add_filter( 'plugin_action_links_' . AI1WMNE_PLUGIN_BASENAME, 'ai1wmne_plugin_action_links' );
+add_filter( 'network_admin_plugin_action_links_' . AI1WMNE_PLUGIN_BASENAME, 'ai1wmne_plugin_action_links' );
+add_filter( 'plugin_row_meta', 'ai1wmne_plugin_row_update_status', 20, 2 );
 add_action( 'load-plugins.php', 'ai1wmne_sync_plugins_screen', 20 );
 add_action( 'load-update-core.php', 'ai1wmne_sync_plugins_screen', 20 );
 add_action( 'admin_notices', 'ai1wmne_update_diagnostics_notice' );

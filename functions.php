@@ -311,6 +311,99 @@ function ai1wmne_update_diagnostics_notice() {
 }
 
 /**
+ * Run an immediate update check from the plugin row.
+ *
+ * WordPress throttles its own checks, and a broken outbound request is
+ * otherwise invisible. This clears both caches, records a fresh result, and
+ * reloads the Plugins screen so the row status shows what happened.
+ *
+ * @return void
+ */
+function ai1wmne_manual_update_check() {
+	if ( empty( $_GET['ai1wmne-check'] ) || ! current_user_can( 'update_plugins' ) ) {
+		return;
+	}
+
+	check_admin_referer( 'ai1wmne_check' );
+
+	delete_site_transient( 'update_plugins' );
+	delete_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE );
+	ai1wmne_github_release();
+
+	wp_safe_redirect(
+		function_exists( 'is_network_admin' ) && is_network_admin()
+			? network_admin_url( 'plugins.php' )
+			: admin_url( 'plugins.php' )
+	);
+	exit;
+}
+
+/**
+ * Add an immediate update check to the plugin action links.
+ *
+ * @param  array $links Plugin action links
+ * @return array
+ */
+function ai1wmne_plugin_action_links( $links ) {
+	if ( ! current_user_can( 'update_plugins' ) ) {
+		return $links;
+	}
+
+	$url = function_exists( 'is_network_admin' ) && is_network_admin()
+		? network_admin_url( 'plugins.php?ai1wmne-check=1' )
+		: admin_url( 'plugins.php?ai1wmne-check=1' );
+
+	$links[] = sprintf(
+		'<a href="%s">%s</a>',
+		esc_url( wp_nonce_url( $url, 'ai1wmne_check' ) ),
+		esc_html__( 'Check for updates', AI1WMNE_PLUGIN_NAME )
+	);
+
+	return $links;
+}
+
+/**
+ * Print the latest GitHub check result in the plugin row.
+ *
+ * @param  array  $links Plugin row links
+ * @param  string $file  Plugin basename
+ * @return array
+ */
+function ai1wmne_plugin_row_update_status( $links, $file ) {
+	if ( $file !== AI1WMNE_PLUGIN_BASENAME ) {
+		return $links;
+	}
+
+	$state = ai1wmne_github_release_state();
+	if ( ! is_array( $state ) ) {
+		return $links;
+	}
+
+	if ( empty( $state['release'] ) ) {
+		$status = sprintf(
+			__( 'GitHub update check failed: %s', AI1WMNE_PLUGIN_NAME ),
+			! empty( $state['error'] ) ? $state['error'] : __( 'unknown error', AI1WMNE_PLUGIN_NAME )
+		);
+	} else {
+		$status = sprintf(
+			__( 'GitHub release: %s', AI1WMNE_PLUGIN_NAME ),
+			$state['release']['version']
+		);
+	}
+
+	if ( ! empty( $state['checked'] ) ) {
+		$status .= ' (' . sprintf(
+			__( 'checked %s ago', AI1WMNE_PLUGIN_NAME ),
+			human_time_diff( $state['checked'] )
+		) . ')';
+	}
+
+	$links[] = esc_html( $status );
+
+	return $links;
+}
+
+/**
  * Prevent the base plugin from sending site and administrator details to its
  * private extension-update check. Public release metadata remains available.
  *
