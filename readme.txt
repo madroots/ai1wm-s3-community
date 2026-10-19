@@ -3,7 +3,7 @@ Contributors: simonfujdala
 Requires at least: 3.3
 Requires PHP: 5.3
 Requires Plugins: all-in-one-wp-migration
-Stable tag: 1.52.3
+Stable tag: 1.52.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -26,13 +26,16 @@ The Plugins screen reports newer upstream releases for manual review, but does n
 
 == Updates ==
 
-Stable updates are distributed from this repository's public GitHub Releases. A release is created only from a version tag such as `v1.52.3`; ordinary branch pushes do not publish WordPress updates.
+Stable updates are distributed from this repository's public GitHub Releases. A release is created only from a version tag such as `v1.52.4`; ordinary branch pushes do not publish WordPress updates.
 
 The release must contain `all-in-one-wp-migration-s3-client-extension-VERSION.zip`. WordPress refreshes GitHub metadata during normal plugin update checks, caches the result for one hour, and installs that asset through the normal Plugins screen.
 
 Release procedure: update the plugin header, `AI1WMNE_FORK_VERSION`, `VERSION`, and Stable tag; commit and push; then run `git tag -a vVERSION -m "Release vVERSION"` and `git push origin vVERSION`.
 
 == Changelog ==
+
+= 1.52.4 =
+* Published a maintenance release to exercise GitHub-powered WordPress update delivery.
 
 = 1.52.3 =
 * Added native WordPress updates from public GitHub Releases.

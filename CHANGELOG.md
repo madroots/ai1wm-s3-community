@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.4
+
+- Published a maintenance release to exercise GitHub-powered WordPress update delivery.
+
 ## 1.52.3
 
 - Added native WordPress updates from public GitHub Releases.
