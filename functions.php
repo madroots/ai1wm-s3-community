@@ -80,11 +80,12 @@ function ai1wmne_aws_region_name( $default = null ) {
 }
 
 /**
- * Remove third-party metadata while preserving this fork's cached update.
+ * Remove third-party metadata and inject this fork's latest cached release.
  *
  * This read filter never performs network I/O. The base plugin advertises a
- * different package at this plugin's basename, so unknown metadata is removed
- * before WordPress displays or installs it.
+ * different package at this plugin's basename, and security or update-manager
+ * plugins may strip or short-circuit the update transient, so the cached
+ * release is applied on every read instead of trusting the stored entry.
  *
  * @param  object $transient WordPress plugin update transient
  * @return object
@@ -111,16 +112,70 @@ function ai1wmne_filter_managed_update( $transient ) {
 	unset( $transient->response[ AI1WMNE_PLUGIN_BASENAME ] );
 	unset( $transient->no_update[ AI1WMNE_PLUGIN_BASENAME ] );
 
+	$state = ai1wmne_github_release_state();
+	if ( ! empty( $state['release'] ) ) {
+		return ai1wmne_apply_community_release( $transient, $state['release'] );
+	}
+
 	if ( $details ) {
-		$new_version = is_object( $details ) ? $details->new_version : $details['new_version'];
-		if ( version_compare( AI1WMNE_FORK_VERSION, $new_version, '<' ) ) {
-			$transient->response[ AI1WMNE_PLUGIN_BASENAME ] = $details;
-		} else {
-			$transient->no_update[ AI1WMNE_PLUGIN_BASENAME ] = $details;
-		}
+		return ai1wmne_apply_community_details( $transient, $details );
 	}
 
 	return $transient;
+}
+
+/**
+ * Apply parsed release metadata to a plugin update transient.
+ *
+ * @param  object $transient WordPress plugin update transient
+ * @param  array  $release   Parsed GitHub release
+ * @return object
+ */
+function ai1wmne_apply_community_release( $transient, $release ) {
+	unset( $transient->response[ AI1WMNE_PLUGIN_BASENAME ] );
+	unset( $transient->no_update[ AI1WMNE_PLUGIN_BASENAME ] );
+
+	$details = ai1wmne_github_update_details( $release );
+	if ( version_compare( AI1WMNE_FORK_VERSION, $release['version'], '<' ) ) {
+		$transient->response[ AI1WMNE_PLUGIN_BASENAME ] = $details;
+	} else {
+		$transient->no_update[ AI1WMNE_PLUGIN_BASENAME ] = $details;
+	}
+
+	return $transient;
+}
+
+/**
+ * Reclassify previously stored community update details.
+ *
+ * @param  object        $transient WordPress plugin update transient
+ * @param  array|object  $details   Stored update details
+ * @return object
+ */
+function ai1wmne_apply_community_details( $transient, $details ) {
+	$new_version = is_object( $details ) ? $details->new_version : $details['new_version'];
+
+	if ( version_compare( AI1WMNE_FORK_VERSION, $new_version, '<' ) ) {
+		$transient->response[ AI1WMNE_PLUGIN_BASENAME ] = $details;
+	} else {
+		$transient->no_update[ AI1WMNE_PLUGIN_BASENAME ] = $details;
+	}
+
+	return $transient;
+}
+
+/**
+ * Add this fork's update to transient reads another plugin short-circuited.
+ *
+ * @param  mixed $pre Short-circuit value
+ * @return mixed
+ */
+function ai1wmne_filter_short_circuit( $pre ) {
+	if ( ! is_object( $pre ) ) {
+		return $pre;
+	}
+
+	return ai1wmne_filter_managed_update( $pre );
 }
 
 /**
@@ -152,15 +207,7 @@ function ai1wmne_refresh_managed_update( $transient ) {
 	}
 
 	if ( $release = ai1wmne_github_release() ) {
-		unset( $transient->response[ AI1WMNE_PLUGIN_BASENAME ] );
-		unset( $transient->no_update[ AI1WMNE_PLUGIN_BASENAME ] );
-
-		$details = ai1wmne_github_update_details( $release );
-		if ( version_compare( AI1WMNE_FORK_VERSION, $release['version'], '<' ) ) {
-			$transient->response[ AI1WMNE_PLUGIN_BASENAME ] = $details;
-		} else {
-			$transient->no_update[ AI1WMNE_PLUGIN_BASENAME ] = $details;
-		}
+		return ai1wmne_apply_community_release( $transient, $release );
 	}
 
 	return $transient;

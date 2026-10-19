@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.52.11
+
+- Apply the cached GitHub release on every update-transient read, so security or update-manager plugins that strip or short-circuit the transient can no longer hide the update.
+- Add this fork's update to transient reads another plugin short-circuited.
+
 ## 1.52.10
 
 - Published a maintenance release for verifying the manual update check from an installed 1.52.9.
