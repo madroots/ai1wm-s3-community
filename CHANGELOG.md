@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.10
+
+- Published a maintenance release for verifying the manual update check from an installed 1.52.9.
+
 ## 1.52.9
 
 - Added a nonce-protected "Check for updates" action to the plugin row that clears both caches and checks immediately.

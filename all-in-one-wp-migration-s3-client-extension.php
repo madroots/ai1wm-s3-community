@@ -5,7 +5,7 @@
  * Description: Independently maintained GPL fork of the S3 Client extension for All-in-One WP Migration.
  * Author: Simon Fujdala
  * Author URI: https://best-web.sk/
- * Version: 1.52.9
+ * Version: 1.52.10
  * Text Domain: all-in-one-wp-migration-s3-client-extension
  * Domain Path: /languages
  * Network: True
