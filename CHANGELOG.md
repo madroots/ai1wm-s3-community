@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.52.7
+
+- Added a public release-page fallback when the GitHub API is unavailable or rate-limited.
+- Added an admin notice explaining failed update checks and unregistered releases.
+- Reconcile updates on the Updates screen as well as the Plugins screen.
+- Create the update transient when WordPress has none, so a failed WordPress.org check no longer hides the release.
+
 ## 1.52.6
 
 - Published a maintenance release for verifying the GitHub-powered update flow from an installed 1.52.5.

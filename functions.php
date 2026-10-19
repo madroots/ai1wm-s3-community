@@ -225,7 +225,11 @@ function ai1wmne_sync_plugins_screen() {
 
 	$transient = get_site_transient( 'update_plugins' );
 	if ( ! is_object( $transient ) ) {
-		return;
+		$transient = (object) array(
+			'response'     => array(),
+			'no_update'    => array(),
+			'last_checked' => time(),
+		);
 	}
 
 	$release = ai1wmne_github_release();
@@ -238,6 +242,72 @@ function ai1wmne_sync_plugins_screen() {
 	}
 
 	set_site_transient( 'update_plugins', ai1wmne_refresh_managed_update( $transient ) );
+}
+
+/**
+ * Explain a failed or unregistered update check on update screens.
+ *
+ * Silent failures are otherwise indistinguishable from "up to date": a site
+ * whose server cannot reach GitHub, or a transient another plugin removed,
+ * would never show the published release.
+ *
+ * @return void
+ */
+function ai1wmne_update_diagnostics_notice() {
+	if ( ! current_user_can( 'update_plugins' ) ) {
+		return;
+	}
+
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen || ! in_array( $screen->id, array( 'plugins', 'update-core', 'plugins-network', 'update-core-network' ), true ) ) {
+		return;
+	}
+
+	$state = ai1wmne_github_release_state();
+	if ( ! is_array( $state ) ) {
+		return;
+	}
+
+	$retry_url = function_exists( 'is_network_admin' ) && is_network_admin()
+		? network_admin_url( 'update-core.php?force-check=1' )
+		: admin_url( 'update-core.php?force-check=1' );
+
+	$retry = '<a href="' . esc_url( $retry_url ) . '">' .
+		esc_html__( 'Retry', AI1WMNE_PLUGIN_NAME ) .
+		'</a>';
+
+	if ( empty( $state['release'] ) ) {
+		$error = ! empty( $state['error'] ) ? $state['error'] : __( 'unknown error', AI1WMNE_PLUGIN_NAME );
+
+		printf(
+			'<div class="notice notice-warning"><p>%s %s</p></div>',
+			sprintf(
+				esc_html__( 'S3 Client update check failed: %s', AI1WMNE_PLUGIN_NAME ),
+				esc_html( $error )
+			),
+			$retry
+		);
+		return;
+	}
+
+	if ( version_compare( AI1WMNE_FORK_VERSION, $state['release']['version'], '>=' ) ) {
+		return;
+	}
+
+	$transient = get_site_transient( 'update_plugins' );
+	if ( is_object( $transient ) && isset( $transient->response[ AI1WMNE_PLUGIN_BASENAME ] ) ) {
+		return;
+	}
+
+	printf(
+		'<div class="notice notice-warning"><p>%s %s</p></div>',
+		sprintf(
+			esc_html__( 'S3 Client %1$s is published, but WordPress did not register the update. Installed version: %2$s.', AI1WMNE_PLUGIN_NAME ),
+			esc_html( $state['release']['version'] ),
+			esc_html( AI1WMNE_FORK_VERSION )
+		),
+		$retry
+	);
 }
 
 /**
@@ -287,8 +357,10 @@ function ai1wmne_upstream_version() {
 /**
  * Read the latest stable GitHub release and locate its installable ZIP asset.
  *
- * Successful responses are cached for ten minutes. Failures are cached for ten
- * minutes to avoid repeatedly hitting the unauthenticated GitHub API limit.
+ * The GitHub API is queried first. When it is rate-limited, blocked, or
+ * otherwise unavailable, the public release page redirect is used to resolve
+ * the tag and build the deterministic asset URL. Successful and failed
+ * lookups are cached for ten minutes.
  *
  * @return array|null
  */
@@ -297,6 +369,10 @@ function ai1wmne_github_release() {
 	if ( is_array( $cached ) && array_key_exists( 'release', $cached ) ) {
 		return $cached['release'];
 	}
+
+	$error      = '';
+	$release    = null;
+	$api_usable = false;
 
 	$response = wp_remote_get(
 		AI1WMNE_GITHUB_RELEASE_API,
@@ -310,20 +386,70 @@ function ai1wmne_github_release() {
 		)
 	);
 
-	if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
-		set_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE, array( 'release' => null ), 10 * 60 );
+	if ( is_wp_error( $response ) ) {
+		$error = $response->get_error_message();
+	} elseif ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		$error = sprintf( 'GitHub API returned HTTP %d', (int) wp_remote_retrieve_response_code( $response ) );
+	} else {
+		$release = ai1wmne_github_release_from_api( wp_remote_retrieve_body( $response ), $error, $api_usable );
+	}
+
+	/*
+	 * Only use the release page when the API itself was unusable. A readable
+	 * API response that lacks the expected asset must not be replaced with a
+	 * synthesized download URL that does not exist.
+	 */
+	if ( ! $release && ! $api_usable ) {
+		$fallback_error = '';
+		$release        = ai1wmne_github_release_from_redirect( $fallback_error );
+		if ( ! $release ) {
+			ai1wmne_github_release_failed( $error ? $error . '; ' . $fallback_error : $fallback_error );
+			return null;
+		}
+	}
+
+	if ( ! $release ) {
+		ai1wmne_github_release_failed( $error );
 		return null;
 	}
 
-	$data = json_decode( wp_remote_retrieve_body( $response ), true );
-	if ( ! is_array( $data ) || empty( $data['tag_name'] ) || ! empty( $data['draft'] ) || ! empty( $data['prerelease'] ) ) {
-		set_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE, array( 'release' => null ), 10 * 60 );
+	set_site_transient(
+		AI1WMNE_GITHUB_RELEASE_CACHE,
+		array(
+			'release' => $release,
+			'checked' => time(),
+		),
+		10 * 60
+	);
+
+	return $release;
+}
+
+/**
+ * Parse a GitHub API release payload.
+ *
+ * @param  string  $body   Response body
+ * @param  string  $error  Failure reason
+ * @param  boolean $usable Whether the API returned a readable release
+ * @return array|null
+ */
+function ai1wmne_github_release_from_api( $body, &$error, &$usable ) {
+	$data = json_decode( $body, true );
+	if ( ! is_array( $data ) || empty( $data['tag_name'] ) ) {
+		$error = 'GitHub API returned an unreadable payload';
+		return null;
+	}
+
+	$usable = true;
+
+	if ( ! empty( $data['draft'] ) || ! empty( $data['prerelease'] ) ) {
+		$error = 'the latest GitHub release is a draft or prerelease';
 		return null;
 	}
 
 	$version = preg_replace( '/^[vV]/', '', trim( $data['tag_name'] ) );
 	if ( ! preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version ) ) {
-		set_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE, array( 'release' => null ), 10 * 60 );
+		$error = sprintf( 'unsupported release tag %s', $data['tag_name'] );
 		return null;
 	}
 
@@ -339,19 +465,96 @@ function ai1wmne_github_release() {
 	}
 
 	if ( ! $package ) {
-		set_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE, array( 'release' => null ), 10 * 60 );
+		$error = sprintf( 'release asset %s is missing', $asset_name );
 		return null;
 	}
 
-	$release = array(
+	return array(
 		'version'      => $version,
 		'package'      => $package,
 		'published_at' => isset( $data['published_at'] ) ? $data['published_at'] : null,
 		'body'         => isset( $data['body'] ) ? $data['body'] : '',
 	);
+}
 
-	set_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE, array( 'release' => $release ), 10 * 60 );
-	return $release;
+/**
+ * Resolve the latest tag from the public release page redirect.
+ *
+ * @param  string $error Failure reason
+ * @return array|null
+ */
+function ai1wmne_github_release_from_redirect( &$error ) {
+	$response = wp_remote_get(
+		AI1WMNE_GITHUB_REPOSITORY_URL . '/releases/latest',
+		array(
+			'headers'     => array(
+				'User-Agent' => 'ai1wm-s3-community/' . AI1WMNE_FORK_VERSION,
+			),
+			'redirection' => 0,
+			'timeout'     => 10,
+		)
+	);
+
+	if ( is_wp_error( $response ) ) {
+		$error = $response->get_error_message();
+		return null;
+	}
+
+	$code = wp_remote_retrieve_response_code( $response );
+	if ( $code < 300 || $code >= 400 ) {
+		$error = sprintf( 'GitHub release page returned HTTP %d', (int) $code );
+		return null;
+	}
+
+	$location = wp_remote_retrieve_header( $response, 'location' );
+	if ( ! preg_match( '#/tag/(v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?)$#', (string) $location, $matches ) ) {
+		$error = 'GitHub release redirect did not contain a version tag';
+		return null;
+	}
+
+	$tag     = $matches[1];
+	$version = preg_replace( '/^[vV]/', '', $tag );
+
+	return array(
+		'version'      => $version,
+		'package'      => sprintf(
+			'%s/releases/download/%s/%s-%s.zip',
+			AI1WMNE_GITHUB_REPOSITORY_URL,
+			$tag,
+			AI1WMNE_PLUGIN_NAME,
+			$version
+		),
+		'published_at' => null,
+		'body'         => '',
+	);
+}
+
+/**
+ * Cache a failed release lookup.
+ *
+ * @param  string $error Failure reason
+ * @return void
+ */
+function ai1wmne_github_release_failed( $error ) {
+	set_site_transient(
+		AI1WMNE_GITHUB_RELEASE_CACHE,
+		array(
+			'release' => null,
+			'error'   => $error,
+			'checked' => time(),
+		),
+		10 * 60
+	);
+}
+
+/**
+ * Return the cached release lookup state.
+ *
+ * @return array|null
+ */
+function ai1wmne_github_release_state() {
+	$cached = get_site_transient( AI1WMNE_GITHUB_RELEASE_CACHE );
+	return is_array( $cached ) ? $cached : null;
 }
 
 /**

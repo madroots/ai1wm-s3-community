@@ -3,7 +3,7 @@ Contributors: simonfujdala
 Requires at least: 3.3
 Requires PHP: 5.3
 Requires Plugins: all-in-one-wp-migration
-Stable tag: 1.52.6
+Stable tag: 1.52.7
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -26,15 +26,20 @@ The Plugins screen reports newer upstream releases for manual review, but does n
 
 == Updates ==
 
-Stable updates are distributed from this repository's public GitHub Releases. A release is created only from a version tag such as `v1.52.6`; ordinary branch pushes do not publish WordPress updates.
+Stable updates are distributed from this repository's public GitHub Releases. A release is created only from a version tag such as `v1.52.7`; ordinary branch pushes do not publish WordPress updates.
 
-The release must contain `all-in-one-wp-migration-s3-client-extension-VERSION.zip`. WordPress refreshes GitHub metadata during normal plugin update checks and on each Plugins screen visit, caches the result for ten minutes, and installs that asset through the normal Plugins screen.
+The release must contain `all-in-one-wp-migration-s3-client-extension-VERSION.zip`. WordPress refreshes GitHub metadata during normal plugin update checks, on each Plugins screen visit, and on the Updates screen. The GitHub API is used first, with the public release page redirect as a fallback; results are cached for ten minutes.
 
-Clicking "Check again" on Dashboard > Updates clears both update caches and forces an immediate plugin update check.
+Clicking "Check again" on Dashboard > Updates clears both update caches and forces an immediate plugin update check. If the release cannot be fetched or WordPress does not register it, the Plugins and Updates screens show a warning with the exact reason.
 
 Release procedure: update the plugin header, `AI1WMNE_FORK_VERSION`, `VERSION`, and Stable tag; commit and push; then run `git tag -a vVERSION -m "Release vVERSION"` and `git push origin vVERSION`.
 
 == Changelog ==
+
+= 1.52.7 =
+* Added a public release-page fallback when the GitHub API is unavailable or rate-limited.
+* Added an admin notice explaining failed update checks and unregistered releases.
+* Reconcile updates on the Updates screen as well as the Plugins screen.
 
 = 1.52.6 =
 * Published a maintenance release for verifying the GitHub-powered update flow from an installed 1.52.5.
