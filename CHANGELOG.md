@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.6
+
+- Published a maintenance release for verifying the GitHub-powered update flow from an installed 1.52.5.
+
 ## 1.52.5
 
 - Reconcile the Plugins screen with the latest GitHub release on each visit instead of waiting for the hourly WordPress check.
