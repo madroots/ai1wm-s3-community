@@ -66,6 +66,13 @@ Secrets (Settings > Secrets and variables > Actions):
 
 Then run `docs/setup-repo.sh` once to enable auto-merge and require the **Required checks** status on `main`.
 
+## Offline references for the agent
+
+The agent has no internet. Each run it gets, read-only: the changelog entries, the current base plugin source,
+and WordPress core sources for 5.9 (the supported floor), 6.2, 6.5 and the current release
+(`scripts/fetch-reference-sources.sh`). The prompt requires it to verify that any WordPress API it uses exists
+in both the oldest and newest copy. To change the set, edit the default list in that script.
+
 ## Safety model
 
 The ZIP runs as admin PHP on every site that updates it. The agent therefore gets no network,
