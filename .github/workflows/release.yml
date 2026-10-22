@@ -51,30 +51,11 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-
-          slug='all-in-one-wp-migration-s3-client-extension'
           version="${TAG#v}"
-          asset="${slug}-${version}.zip"
-          checksum="${asset}.sha256"
-          stage="$(mktemp -d)"
-          trap 'rm -rf "${stage}"' EXIT
-
-          mkdir -p "${stage}/${slug}"
-          rsync -a \
-            --exclude='.git/' --exclude='.github/' \
-            --exclude='scripts/' --exclude='tests/' --exclude='upstream/' --exclude='docs/' \
-            ./ "${stage}/${slug}/"
-          (
-            cd "${stage}"
-            zip -qr "${GITHUB_WORKSPACE}/${asset}" "${slug}"
-          )
-
-          unzip -tqq "${asset}"
-          printf '%s  %s\n' "$(sha256sum "${asset}" | cut -d ' ' -f 1)" "${asset}" > "${checksum}"
+          scripts/build-zip.sh "${version}" .
           node scripts/version.mjs notes "${version}" > release-notes.md
-
-          printf 'asset=%s\n' "${asset}" >> "${GITHUB_OUTPUT}"
-          printf 'checksum=%s\n' "${checksum}" >> "${GITHUB_OUTPUT}"
+          printf 'asset=all-in-one-wp-migration-s3-client-extension-%s.zip\n' "${version}" >> "${GITHUB_OUTPUT}"
+          printf 'checksum=all-in-one-wp-migration-s3-client-extension-%s.zip.sha256\n' "${version}" >> "${GITHUB_OUTPUT}"
 
       - name: Publish GitHub release
         env:

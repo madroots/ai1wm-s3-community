@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: tests-${{ github.ref }}
@@ -53,10 +54,59 @@ jobs:
         if: matrix.php == '8.3'
         run: node scripts/version.mjs check
 
+  package:
+    name: Build ZIP${{ github.event_name == 'pull_request' && ' and publish prerelease' || '' }}
+    runs-on: ubuntu-latest
+    needs: static
+    permissions:
+      contents: write
+    outputs:
+      prerelease_tag: ${{ steps.prerelease.outputs.tag }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Build the installable ZIP
+        run: scripts/build-zip.sh "$(node scripts/version.mjs check)" dist
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: plugin-zip
+          path: dist/
+          retention-days: 7
+
+      # The tests install the published prerelease asset, so what is tested is
+      # byte-for-byte what a download link serves. Prereleases are ignored by the
+      # plugin's updater and by GitHub's "latest release", so no site is offered it.
+      # Fork PRs get a read-only token and skip this.
+      - name: Publish prerelease for this pull request
+        id: prerelease
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -Eeuo pipefail
+          tag="rc-pr${PR}-${SHA:0:7}"
+          # Replace earlier builds of the same PR.
+          gh release list --limit 100 --json tagName --jq '.[].tagName' \
+            | grep "^rc-pr${PR}-" \
+            | while read -r old; do gh release delete "${old}" --cleanup-tag --yes; done || true
+          gh release create "${tag}" dist/* \
+            --prerelease \
+            --target "${SHA}" \
+            --title "Test build for PR #${PR}" \
+            --notes "Automated test build of ${SHA}. Not a release; deleted when the PR closes."
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+
   integration:
     name: WP integration (PHP ${{ matrix.php }}, base ${{ matrix.base }})
     runs-on: ubuntu-latest
-    needs: static
+    needs: package
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -69,6 +119,34 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Fetch the build under test
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.package.outputs.prerelease_tag }}
+        run: |
+          set -Eeuo pipefail
+          mkdir -p dl
+          if [[ -n "${TAG}" ]]; then
+            gh release download "${TAG}" --pattern '*.zip' --dir dl
+          else
+            gh run download "${GITHUB_RUN_ID}" --name plugin-zip --dir dl
+          fi
+          zip="$(find "${PWD}/dl" -name '*.zip' | head -n 1)"
+          [[ -n "${zip}" ]] || { echo 'no ZIP downloaded' >&2; exit 1; }
+          echo "PLUGIN_ZIP=${zip}" >> "${GITHUB_ENV}"
+
+      - name: Fetch the last published release (upgrade-path case)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          # `gh release download` without a tag takes the latest non-prerelease.
+          if gh release download --pattern '*.zip' --output "${PWD}/previous.zip"; then
+            echo "PREVIOUS_ZIP=${PWD}/previous.zip" >> "${GITHUB_ENV}"
+          else
+            echo '::warning::no published release found; upgrade-path case will be skipped'
+          fi
+
       - name: Run suite
         env:
           PHP_VERSION: ${{ matrix.php }}
@@ -79,9 +157,9 @@ jobs:
   required:
     name: Required checks
     if: always()
-    needs: [static, integration]
+    needs: [static, package, integration]
     runs-on: ubuntu-latest
     steps:
       - name: All jobs succeeded
         run: |
-          [[ "${{ needs.static.result }}" == success && "${{ needs.integration.result }}" == success ]]
+          [[ "${{ needs.static.result }}" == success && "${{ needs.package.result }}" == success && "${{ needs.integration.result }}" == success ]]

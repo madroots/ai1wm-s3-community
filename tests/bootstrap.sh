@@ -19,7 +19,7 @@ wp core install --url=http://localhost --title='ai1wmne tests' \
 	--admin_user=admin --admin_password=admin --admin_email=admin@example.com --skip-email
 
 wp plugin install /tmp/ai1wm.zip --activate
-wp plugin activate "${PLUGIN_SLUG}"
+wp plugin install /tmp/plugin.zip --activate
 wp plugin list --fields=name,status,version
 
 wp option update ai1wmne_s3_api_endpoint "${S3_HOST}"

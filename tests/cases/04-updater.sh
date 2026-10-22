@@ -9,6 +9,15 @@ plugin_dir="${WP_PATH}/wp-content/plugins/${PLUGIN_SLUG}"
 mock_dir="${WP_PATH}/mock"
 mkdir -p "${mock_dir}" "${WP_PATH}/wp-content/mu-plugins"
 
+# Leave the environment as found: later cases expect the plugin under test.
+restore_environment() {
+	wp config delete AI1WMNE_GITHUB_RELEASE_API >/dev/null 2>&1 || true
+	rm -rf "${mock_dir}" "${WP_PATH}/wp-content/mu-plugins/allow-local-packages.php"
+	wp plugin install /tmp/plugin.zip --force --activate >/dev/null 2>&1 || true
+	wp eval 'delete_site_transient( "update_plugins" );' >/dev/null 2>&1 || true
+}
+trap restore_environment EXIT
+
 # WordPress refuses to download packages from localhost unless told otherwise.
 cat > "${WP_PATH}/wp-content/mu-plugins/allow-local-packages.php" <<'PHP'
 <?php

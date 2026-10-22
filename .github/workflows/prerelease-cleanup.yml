@@ -1,0 +1,25 @@
+name: Remove PR test builds
+
+# tests.yml publishes a prerelease per pull-request build (tag rc-pr<N>-<sha>).
+# They exist only for testing; delete them when the PR closes, merged or not.
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete this PR's test builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -Eeuo pipefail
+          gh release list --limit 100 --json tagName --jq '.[].tagName' \
+            | grep "^rc-pr${PR}-" \
+            | while read -r tag; do gh release delete "${tag}" --cleanup-tag --yes; done || true

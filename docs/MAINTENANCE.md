@@ -14,7 +14,8 @@ upstream-sync.yml (daily 13:00 UTC)
                           -> guard-diff -> php -l -> version bump -> PR
            base mode      deterministic "reviewed against base X" bump -> PR
            heartbeat mode keeps scheduled workflows alive on a quiet repo
-  PR       tests.yml: lint, PHPCompatibility 7.4+, Docker integration (WordPress + S3 server)
+  PR       tests.yml: lint, PHPCompatibility 7.4+, build ZIP -> publish as PRERELEASE rc-pr<N>-<sha>,
+                    Docker integration (WordPress + S3 server) installs that prerelease asset
            "Required checks" green -> auto-merge (squash)
 main     release-on-merge.yml pushes tag vX.Y.Z -> release.yml builds ZIP + sha256 + GitHub Release
 sites    the plugin's own updater reads the GitHub Release and offers the update in wp-admin
@@ -39,7 +40,17 @@ tests/run.sh                              # full integration suite (needs Docker
 PHP_VERSION=7.4 AI1WM_VERSION=7.84 tests/run.sh 01-compat
 ```
 
-`tests/run.sh` downloads WP-CLI and the base plugin on the host (the containers need no
+What the integration suite covers (`tests/cases/`): base-plugin compatibility gate, backup to S3 and restore,
+settings authorization, the update channel, upgrade from the last published release (settings, old backups),
+incremental backups, scheduled export, the S3 browser endpoint, retention. Not covered: restoring incremental
+backups (UI-only flow), real AWS/other providers (the test server is SeaweedFS), the browser UI.
+
+Prereleases are invisible to the plugin's updater and to GitHub's "latest release", so no site is offered a test
+build. They are deleted when the PR closes (`prerelease-cleanup.yml`). Fork PRs skip the prerelease and use the
+workflow artifact instead.
+
+`tests/run.sh` builds the ZIP with `scripts/build-zip.sh` unless `PLUGIN_ZIP` is set, fetches the last release
+for the upgrade case (or uses `PREVIOUS_ZIP`), downloads WP-CLI and the base plugin on the host (the containers need no
 internet) and copies the plugin into the container rather than bind-mounting it.
 
 ## One-time setup

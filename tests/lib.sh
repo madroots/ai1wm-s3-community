@@ -26,6 +26,20 @@ s3_create_bucket() { s3_php 'try { $s3->create_bucket( $bucket, $region ); echo 
 # Names of all objects in the test bucket, one per line.
 s3_list() { s3_php 'foreach ( $s3->get_objects_by_bucket( $bucket, $region ) as $item ) { echo $item["name"], "\n"; }'; }
 
+# "path<TAB>bytes" for every object in the test bucket.
+s3_objects() { s3_php 'foreach ( $s3->get_objects_by_bucket( $bucket, $region ) as $item ) { echo $item["path"], "\t", $item["bytes"], "\n"; }'; }
+
+# Delete every object whose key starts with the given prefix: s3_clear_prefix <prefix>
+s3_clear_prefix() {
+	s3_php 'foreach ( $s3->get_objects_by_bucket( $bucket, $region ) as $item ) { if ( strpos( $item["path"], "'"$1"'" ) === 0 ) { $s3->remove_file( $item["path"], $bucket, $region ); } }'
+}
+
+# Size in bytes of one object: s3_size <key>
+s3_size() { s3_objects | awk -F'\t' -v key="$1" '$1 == key { print $2 }'; }
+
+# Archive name from `wp ai1wm ... backup` output.
+backup_name() { sed -n 's/^Backup file: //p' <<<"$1" | tail -n 1; }
+
 pass() { printf '  ok: %s\n' "$*"; }
 fail() { printf '  FAIL: %s\n' "$*" >&2; exit 1; }
 
