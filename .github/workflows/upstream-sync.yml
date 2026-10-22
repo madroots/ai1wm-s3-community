@@ -128,6 +128,7 @@ jobs:
           unzip -q "${AGENT_DIR}/base.zip" -d "${AGENT_DIR}/base-extract"
           mv "${AGENT_DIR}/base-extract/all-in-one-wp-migration" "${AGENT_DIR}/base-plugin"
           rm -rf "${AGENT_DIR}/base.zip" "${AGENT_DIR}/base-extract"
+          scripts/fetch-reference-sources.sh "${AGENT_DIR}/wordpress"
           cat "${AGENT_DIR}/changelog.json"
 
       - name: Run agent (DeepSeek via Anthropic-compatible endpoint)
