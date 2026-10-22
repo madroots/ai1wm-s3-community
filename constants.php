@@ -39,9 +39,10 @@ define( 'AI1WMNE_PLUGIN_NAME', 'all-in-one-wp-migration-s3-client-extension' );
 // =========================
 // = GitHub Release Updates =
 // =========================
-define( 'AI1WMNE_GITHUB_REPOSITORY_URL', 'https://github.com/madroots/ai1wm-s3-community' );
-define( 'AI1WMNE_GITHUB_RELEASE_API', 'https://api.github.com/repos/madroots/ai1wm-s3-community/releases/latest' );
-define( 'AI1WMNE_GITHUB_RELEASE_CACHE', 'ai1wmne_github_release' );
+// Overridable (e.g. by the test harness) before this file is loaded.
+defined( 'AI1WMNE_GITHUB_REPOSITORY_URL' ) || define( 'AI1WMNE_GITHUB_REPOSITORY_URL', 'https://github.com/madroots/ai1wm-s3-community' );
+defined( 'AI1WMNE_GITHUB_RELEASE_API' ) || define( 'AI1WMNE_GITHUB_RELEASE_API', 'https://api.github.com/repos/madroots/ai1wm-s3-community/releases/latest' );
+defined( 'AI1WMNE_GITHUB_RELEASE_CACHE' ) || define( 'AI1WMNE_GITHUB_RELEASE_CACHE', 'ai1wmne_github_release' );
 
 // ============
 // = Lib Path =

@@ -11,6 +11,8 @@
  * Network: True
  * Update URI: https://github.com/madroots/ai1wm-s3-community
  * Requires Plugins: all-in-one-wp-migration
+ * Requires PHP: 7.4
+ * Requires at least: 5.9
  *
  * Fork maintained by Simon Fujdala, 2026.
  * Original copyright (C) 2014-2020 ServMask Inc.

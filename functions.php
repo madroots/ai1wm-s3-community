@@ -714,7 +714,7 @@ function ai1wmne_github_update_details( $release ) {
 		'url'          => AI1WMNE_GITHUB_REPOSITORY_URL,
 		'package'      => $release['package'],
 		'tested'       => $wp_version,
-		'requires_php' => '5.3',
+		'requires_php' => '7.4',
 	);
 }
 
@@ -743,9 +743,9 @@ function ai1wmne_github_plugin_information( $result, $action, $args ) {
 		'author_profile' => 'https://best-web.sk/',
 		'homepage'      => AI1WMNE_GITHUB_REPOSITORY_URL,
 		'external'      => true,
-		'requires'      => '3.3',
+		'requires'      => '5.9',
 		'tested'        => isset( $GLOBALS['wp_version'] ) ? $GLOBALS['wp_version'] : '',
-		'requires_php'  => '5.3',
+		'requires_php'  => '7.4',
 		'last_updated'  => $release['published_at'],
 		'download_link' => $release['package'],
 		'sections'      => array(

@@ -1,7 +1,7 @@
 === All-in-One WP Migration S3 Client Extension ===
 Contributors: simonfujdala
-Requires at least: 3.3
-Requires PHP: 5.3
+Requires at least: 5.9
+Requires PHP: 7.4
 Requires Plugins: all-in-one-wp-migration
 Stable tag: 1.52.12
 License: GPLv3 or later
@@ -32,7 +32,7 @@ The release must contain `all-in-one-wp-migration-s3-client-extension-VERSION.zi
 
 For an immediate check, use the "Check for updates" action in this plugin's row on Plugins. It clears both caches and reloads the screen. The row also prints the last GitHub lookup result or the exact failure reason. Clicking "Check again" on Dashboard > Updates performs the same forced refresh.
 
-Release procedure: update the plugin header, `AI1WMNE_FORK_VERSION`, `VERSION`, and Stable tag; commit and push; then run `git tag -a vVERSION -m "Release vVERSION"` and `git push origin vVERSION`.
+Releases are automated: a daily workflow compares ServMask's public S3 Client changelog with this fork, prepares a pull request, and merging it publishes the tagged release. See docs/MAINTENANCE.md in the repository. Manual release: `node scripts/version.mjs bump X.Y.Z --note "..."`, merge to main, and the tag is pushed automatically.
 
 == Changelog ==
 

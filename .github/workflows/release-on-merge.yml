@@ -1,0 +1,36 @@
+name: Tag release on merge
+
+# When a change to VERSION lands on main and its tag does not exist yet, push
+# the tag. The push uses BOT_TOKEN on purpose: tags pushed with the default
+# GITHUB_TOKEN would not trigger release.yml.
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+
+permissions:
+  contents: read
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Push release tag if missing
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          version="$(node scripts/version.mjs check)"
+          tag="v${version}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+            printf 'Tag %s already exists; nothing to do.\n' "${tag}"
+            exit 0
+          fi
+          git config user.name 'ai1wm-s3-community-bot'
+          git config user.email 'noreply@users.noreply.github.com'
+          git tag -a "${tag}" -m "Release ${tag}"
+          git push origin "refs/tags/${tag}"
