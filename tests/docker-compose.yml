@@ -1,0 +1,45 @@
+name: ai1wmne-test-${PHP_VERSION:-8.3}
+
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: wp
+      MARIADB_USER: wp
+      MARIADB_PASSWORD: wp
+      MARIADB_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  s3:
+    image: chrislusf/seaweedfs:latest
+    # Single admin identity taken from the environment (no config file mount).
+    command: server -s3 -dir=/data
+    environment:
+      AWS_ACCESS_KEY_ID: testaccess
+      AWS_SECRET_ACCESS_KEY: testsecret1234
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8333/status || wget -q -S -O /dev/null http://127.0.0.1:8333/ 2>&1 | grep -q HTTP"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  wp:
+    build:
+      context: .
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.3}
+    depends_on:
+      db:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DB_NAME: wp
+      AI1WM_VERSION: ${AI1WM_VERSION:-latest}
