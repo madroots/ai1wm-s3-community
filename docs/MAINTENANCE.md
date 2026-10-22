@@ -17,7 +17,9 @@ upstream-sync.yml (daily 13:00 UTC)
   PR       tests.yml: lint, PHPCompatibility 7.4+, build ZIP -> publish as PRERELEASE rc-pr<N>-<sha>,
                     Docker integration (WordPress + S3 server) installs that prerelease asset
            "Required checks" green -> auto-merge (squash)
-main     release-on-merge.yml pushes tag vX.Y.Z -> release.yml builds ZIP + sha256 + GitHub Release
+main     release-on-merge.yml pushes tag vX.Y.Z -> release.yml builds ZIP + sha256, compares it with the
+         tested PR prerelease (scripts/zip-diff.sh; any difference aborts), publishes the Release,
+         then deletes the prerelease
 sites    the plugin's own updater reads the GitHub Release and offers the update in wp-admin
 ```
 
@@ -46,7 +48,7 @@ incremental backups, scheduled export, the S3 browser endpoint, retention. Not c
 backups (UI-only flow), real AWS/other providers (the test server is SeaweedFS), the browser UI.
 
 Prereleases are invisible to the plugin's updater and to GitHub's "latest release", so no site is offered a test
-build. They are deleted when the PR closes (`prerelease-cleanup.yml`). Fork PRs skip the prerelease and use the
+build. A PR closed without merging has its prerelease deleted at once (`prerelease-cleanup.yml`); a merged PR that changes `VERSION` keeps it until `release.yml` has verified the release against it, then deletes it. Fork PRs skip the prerelease and use the
 workflow artifact instead.
 
 `tests/run.sh` builds the ZIP with `scripts/build-zip.sh` unless `PLUGIN_ZIP` is set, fetches the last release

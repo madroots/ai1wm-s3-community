@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: read
 
 env:
   TAG: ${{ inputs.tag || github.ref_name }}
@@ -57,6 +58,38 @@ jobs:
           printf 'asset=all-in-one-wp-migration-s3-client-extension-%s.zip\n' "${version}" >> "${GITHUB_OUTPUT}"
           printf 'checksum=all-in-one-wp-migration-s3-client-extension-%s.zip.sha256\n' "${version}" >> "${GITHUB_OUTPUT}"
 
+      # The ZIP that CI tested was built from the PR branch and published as a
+      # prerelease; this one is built from the merged tag. They must be identical,
+      # otherwise something changed after testing and nothing is published.
+      # A manual re-run (workflow_dispatch) may skip this: the prerelease is gone
+      # after the first successful release.
+      - name: Verify the release is the tested build
+        id: verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          sha="$(git rev-list -n 1 "refs/tags/${TAG}")"
+          pr="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${sha}/pulls" --jq '.[0].number // empty')"
+          tested=''
+          if [[ -n "${pr}" ]]; then
+            tested="$(gh release list --limit 100 --json tagName --jq '.[].tagName' | grep "^rc-pr${pr}-" | head -n 1 || true)"
+          fi
+          if [[ -z "${tested}" ]]; then
+            if [[ "${EVENT}" == workflow_dispatch ]]; then
+              echo '::warning::no tested prerelease found; skipping verification (manual run)'
+              exit 0
+            fi
+            echo "::error::no tested prerelease found for ${TAG} (PR: ${pr:-none}); refusing to publish untested bytes" >&2
+            exit 1
+          fi
+          mkdir tested
+          gh release download "${tested}" --pattern '*.zip' --dir tested
+          scripts/zip-diff.sh tested/*.zip "all-in-one-wp-migration-s3-client-extension-${TAG#v}.zip"
+          echo "tested_tag=${tested}" >> "${GITHUB_OUTPUT}"
+
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -69,3 +102,10 @@ jobs:
             --verify-tag \
             --notes-file release-notes.md \
             --title "${TAG}"
+
+      - name: Remove the tested prerelease
+        if: steps.verify.outputs.tested_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TESTED: ${{ steps.verify.outputs.tested_tag }}
+        run: gh release delete "${TESTED}" --cleanup-tag --yes
