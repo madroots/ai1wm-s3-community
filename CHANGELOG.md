@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.59.0
+
+- Added WordPress Twenty Twenty-Five as a supported default theme in the site reset functionality.
+- Require the export capability and a nonce on the S3 settings and connection handlers (security fix).
+- Pass the configured region name to the S3 WP-CLI restore command so restores no longer abort.
+
 ## 1.52.12
 
 - Published a maintenance release for verifying the transient-read fix from an installed 1.52.11.
