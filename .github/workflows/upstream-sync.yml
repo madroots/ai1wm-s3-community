@@ -1,0 +1,280 @@
+name: Upstream sync
+
+# Daily at 13:00 UTC, which is off-peak for DeepSeek every day of the week
+# (peak is 01-04 and 06-10 UTC, Mon-Fri). Detection costs nothing; the model is
+# only called when ServMask has published something new.
+#
+# Flow: detect -> (agent | deterministic bump) -> guard -> PR -> auto-merge once
+# the required checks pass -> release-on-merge.yml tags -> release.yml publishes.
+on:
+  schedule:
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+env:
+  # Pinned: an unpinned agent CLI would run unreviewed code with our secrets.
+  CLAUDE_CODE_VERSION: '2.1.308'
+  AGENT_DIR: /tmp/agent
+
+jobs:
+  detect:
+    name: Detect upstream changes
+    runs-on: ubuntu-latest
+    outputs:
+      s3_new: ${{ steps.status.outputs.s3_new }}
+      s3_latest: ${{ steps.status.outputs.s3_latest }}
+      s3_last_processed: ${{ steps.status.outputs.s3_last_processed }}
+      base_new: ${{ steps.status.outputs.base_new }}
+      base_latest: ${{ steps.status.outputs.base_latest }}
+      busy: ${{ steps.busy.outputs.busy }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Read upstream signals
+        id: status
+        run: node scripts/upstream.mjs status
+
+      - name: Is an upstream PR already in flight?
+        id: busy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          count="$(gh pr list --state open --json headRefName --jq '[.[] | select(.headRefName | startswith("upstream/"))] | length')"
+          echo "busy=${count}" >> "${GITHUB_OUTPUT}"
+
+  sync:
+    name: Prepare sync PR
+    needs: detect
+    if: needs.detect.outputs.busy == '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Decide what to do
+        id: plan
+        env:
+          S3_NEW: ${{ needs.detect.outputs.s3_new }}
+          BASE_NEW: ${{ needs.detect.outputs.base_new }}
+        run: |
+          set -Eeuo pipefail
+          age_days=$(( ( $(date +%s) - $(git log -1 --format=%ct origin/main) ) / 86400 ))
+          if [[ "${S3_NEW}" == true ]]; then
+            mode=s3
+          elif [[ "${BASE_NEW}" == true ]]; then
+            mode=base
+          elif (( age_days >= 45 )); then
+            # GitHub disables scheduled workflows after 60 days without repo activity.
+            mode=heartbeat
+          else
+            mode=none
+          fi
+          echo "mode=${mode}" >> "${GITHUB_OUTPUT}"
+          echo "Mode: ${mode} (main last changed ${age_days} days ago)"
+
+      - name: Skip when branch already exists
+        id: branch
+        if: steps.plan.outputs.mode != 'none'
+        env:
+          MODE: ${{ steps.plan.outputs.mode }}
+          S3_LATEST: ${{ needs.detect.outputs.s3_latest }}
+          BASE_LATEST: ${{ needs.detect.outputs.base_latest }}
+        run: |
+          set -Eeuo pipefail
+          case "${MODE}" in
+            s3) name="upstream/s3-${S3_LATEST}" ;;
+            base) name="upstream/base-${BASE_LATEST}" ;;
+            heartbeat) name="upstream/heartbeat-$(date +%Y%m%d)" ;;
+          esac
+          if git ls-remote --exit-code --heads origin "${name}" >/dev/null 2>&1; then
+            echo "Branch ${name} already exists; leaving it to its PR."
+            echo "skip=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "skip=false" >> "${GITHUB_OUTPUT}"
+          fi
+          echo "name=${name}" >> "${GITHUB_OUTPUT}"
+
+      # ---------------------------------------------------------------- agent
+      - name: Gather agent inputs
+        if: steps.plan.outputs.mode == 's3' && steps.branch.outputs.skip == 'false'
+        env:
+          SINCE: ${{ needs.detect.outputs.s3_last_processed }}
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "${AGENT_DIR}"
+          node scripts/upstream.mjs changelog --since "${SINCE}" > "${AGENT_DIR}/changelog.json"
+          base_version="$(node scripts/upstream.mjs base | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8")).version')"
+          curl -fsSL -o "${AGENT_DIR}/base.zip" "https://downloads.wordpress.org/plugin/all-in-one-wp-migration.${base_version}.zip"
+          unzip -q "${AGENT_DIR}/base.zip" -d "${AGENT_DIR}/base-extract"
+          mv "${AGENT_DIR}/base-extract/all-in-one-wp-migration" "${AGENT_DIR}/base-plugin"
+          rm -rf "${AGENT_DIR}/base.zip" "${AGENT_DIR}/base-extract"
+          cat "${AGENT_DIR}/changelog.json"
+
+      - name: Run agent (DeepSeek via Anthropic-compatible endpoint)
+        if: steps.plan.outputs.mode == 's3' && steps.branch.outputs.skip == 'false'
+        env:
+          ANTHROPIC_BASE_URL: https://api.deepseek.com/anthropic
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.DEEPSEEK_API_KEY }}
+          ANTHROPIC_MODEL: deepseek-v4-pro
+          ANTHROPIC_DEFAULT_OPUS_MODEL: deepseek-v4-pro
+          ANTHROPIC_DEFAULT_SONNET_MODEL: deepseek-v4-pro
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: deepseek-flash
+          CLAUDE_CODE_SUBAGENT_MODEL: deepseek-flash
+          CLAUDE_CODE_EFFORT_LEVEL: high
+          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'
+          DISABLE_TELEMETRY: '1'
+          # The agent must not be able to reach the repo token.
+          GH_TOKEN: ''
+        run: |
+          set -Eeuo pipefail
+          npm install --global --silent "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+          prompt="$(sed "s#\$AGENT_DIR#${AGENT_DIR}#g" .github/agent/prompt.md)"
+          # No network tools, no git, no gh: file edits and `php -l` only.
+          claude -p "${prompt}" \
+            --add-dir "${AGENT_DIR}" \
+            --permission-mode acceptEdits \
+            --allowedTools "Read" "Edit" "Write" "Glob" "Grep" "Bash(php -l:*)" \
+            --max-turns 150 \
+            --output-format json > "${AGENT_DIR}/run.json"
+          node -e 'const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); console.log(r.result || ""); console.log("cost_usd:", r.total_cost_usd, "turns:", r.num_turns);' "${AGENT_DIR}/run.json"
+
+      - name: Verify and apply agent output
+        if: steps.plan.outputs.mode == 's3' && steps.branch.outputs.skip == 'false'
+        env:
+          S3_LATEST: ${{ needs.detect.outputs.s3_latest }}
+          BASE_NEW: ${{ needs.detect.outputs.base_new }}
+          BASE_LATEST: ${{ needs.detect.outputs.base_latest }}
+        run: |
+          set -Eeuo pipefail
+
+          git add -A
+          # Pristine guard from the base ref: the agent cannot have loosened it.
+          git show origin/main:scripts/guard-diff.mjs > "${RUNNER_TEMP}/guard-diff.mjs"
+          node "${RUNNER_TEMP}/guard-diff.mjs" origin/main
+
+          while IFS= read -r -d '' file; do php -l "${file}" >/dev/null; done < <(find . -path './.git' -prune -o -name '*.php' -print0)
+
+          [[ -s "${AGENT_DIR}/notes.json" ]] || { echo 'agent wrote no notes.json' >&2; exit 1; }
+          mapfile -t notes < <(node -e '
+            const n = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).notes;
+            if (!Array.isArray(n) || !n.length || n.length > 20 || n.some((x) => typeof x !== "string" || !x.trim() || x.length > 240 || /[\r\n]/.test(x))) process.exit(1);
+            n.forEach((x) => console.log(x.trim()));
+          ' "${AGENT_DIR}/notes.json")
+          args=()
+          for note in "${notes[@]}"; do args+=(--note "${note}"); done
+          [[ "${BASE_NEW}" == true ]] && args+=(--base-reviewed "${BASE_LATEST}")
+
+          node scripts/version.mjs bump "${S3_LATEST}.0" --upstream "${S3_LATEST}" "${args[@]}"
+          if [[ "${BASE_NEW}" == true ]]; then
+            node scripts/upstream.mjs mark --s3 "${S3_LATEST}" --base "${BASE_LATEST}"
+          else
+            node scripts/upstream.mjs mark --s3 "${S3_LATEST}"
+          fi
+
+      # -------------------------------------------------- deterministic modes
+      - name: Bump for newly reviewed base plugin
+        if: steps.plan.outputs.mode == 'base' && steps.branch.outputs.skip == 'false'
+        env:
+          BASE_LATEST: ${{ needs.detect.outputs.base_latest }}
+        run: |
+          set -Eeuo pipefail
+          current="$(node scripts/version.mjs check)"
+          next="$(awk -F. '{ printf "%d.%d.%d", $1, $2, $3 + 1 }' <<<"${current}")"
+          node scripts/version.mjs bump "${next}" --base-reviewed "${BASE_LATEST}" \
+            --note "Reviewed against All-in-One WP Migration ${BASE_LATEST}."
+          node scripts/upstream.mjs mark --base "${BASE_LATEST}"
+
+      - name: Refresh heartbeat
+        if: steps.plan.outputs.mode == 'heartbeat' && steps.branch.outputs.skip == 'false'
+        run: node scripts/upstream.mjs mark
+
+      # ------------------------------------------------------------------ PR
+      - name: Open PR and enable auto-merge
+        if: steps.plan.outputs.mode != 'none' && steps.branch.outputs.skip == 'false'
+        env:
+          MODE: ${{ steps.plan.outputs.mode }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          S3_LATEST: ${{ needs.detect.outputs.s3_latest }}
+          BASE_LATEST: ${{ needs.detect.outputs.base_latest }}
+        run: |
+          set -Eeuo pipefail
+          case "${MODE}" in
+            s3) title="Sync with ServMask S3 Client ${S3_LATEST}" ;;
+            base) title="Review against All-in-One WP Migration ${BASE_LATEST}" ;;
+            heartbeat) title="Repository heartbeat" ;;
+          esac
+
+          {
+            echo "Automated by \`upstream-sync.yml\` (mode: \`${MODE}\`). Merges automatically once **Required checks** pass."
+            echo
+            if [[ -f upstream/decisions.md && "${MODE}" == s3 ]]; then
+              awk '/^## S3 /{buf=""} {buf=buf $0 "\n"} END{printf "%s", buf}' upstream/decisions.md
+            fi
+          } > "${RUNNER_TEMP}/pr-body.md"
+
+          git config user.name 'ai1wm-s3-community-bot'
+          git config user.email 'noreply@users.noreply.github.com'
+          git checkout -b "${BRANCH}"
+          git add -A
+          git commit -q -m "${title}"
+          git push origin "${BRANCH}"
+
+          gh pr create --base main --head "${BRANCH}" --title "${title}" --body-file "${RUNNER_TEMP}/pr-body.md"
+          gh pr merge "${BRANCH}" --auto --squash --delete-branch
+
+      - name: Keep agent run log
+        if: always() && steps.plan.outputs.mode == 's3'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agent-run
+          path: |
+            /tmp/agent/run.json
+            /tmp/agent/changelog.json
+            /tmp/agent/notes.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+  report-failure:
+    name: Report failure
+    needs: [detect, sync]
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Open or update the failure issue
+        run: |
+          set -Eeuo pipefail
+          title='Upstream sync failed'
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          number="$(gh issue list --repo "${GITHUB_REPOSITORY}" --state open --search "in:title \"${title}\"" --json number --jq '.[0].number // empty')"
+          body="Run: ${run_url}
+
+          Likely causes: ServMask changed the changelog page, the base plugin registry changed, the agent produced a change the guard rejected, or a token expired. Read the failing step."
+          if [[ -n "${number}" ]]; then
+            gh issue comment "${number}" --repo "${GITHUB_REPOSITORY}" --body "${body}"
+          else
+            gh issue create --repo "${GITHUB_REPOSITORY}" --title "${title}" --body "${body}"
+          fi
