@@ -1,25 +1,33 @@
 name: Remove PR test builds
 
 # tests.yml publishes a prerelease per pull-request build (tag rc-pr<N>-<sha>).
-# They exist only for testing; delete them when the PR closes, merged or not.
+# They exist only for testing and are deleted here when the PR closes, with one
+# exception: a merged PR that changes VERSION is about to be released, and
+# release.yml compares its release ZIP with this test build before deleting it.
 on:
   pull_request:
     types: [closed]
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete this PR's test builds
+      - name: Delete this PR's test builds unless a release needs them
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
+          MERGED: ${{ github.event.pull_request.merged }}
         run: |
           set -Eeuo pipefail
+          if [[ "${MERGED}" == true ]] && gh pr diff "${PR}" --name-only | grep -qx 'VERSION'; then
+            echo "PR #${PR} changes VERSION; keeping its test build for the release check."
+            exit 0
+          fi
           gh release list --limit 100 --json tagName --jq '.[].tagName' \
             | grep "^rc-pr${PR}-" \
             | while read -r tag; do gh release delete "${tag}" --cleanup-tag --yes; done || true
