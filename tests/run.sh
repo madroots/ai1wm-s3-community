@@ -39,15 +39,35 @@ fi
 printf '== PHP %s / base plugin %s ==\n' "${PHP_VERSION}" "${AI1WM_VERSION}"
 compose up -d --build --wait --quiet-pull
 
+# The plugin under test is the built ZIP (the same bytes users install), either
+# supplied via PLUGIN_ZIP (CI passes the prerelease asset) or built right here.
+# PREVIOUS_ZIP is the last published release, used by the upgrade-path case.
+rm -f .cache/plugin.zip .cache/previous.zip
+if [[ -n "${PLUGIN_ZIP:-}" ]]; then
+	cp "${PLUGIN_ZIP}" .cache/plugin.zip
+else
+	version="$(node ../scripts/version.mjs check)"
+	../scripts/build-zip.sh "${version}" .cache/build >/dev/null
+	cp ".cache/build/all-in-one-wp-migration-s3-client-extension-${version}.zip" .cache/plugin.zip
+fi
+if [[ -n "${PREVIOUS_ZIP:-}" ]]; then
+	cp "${PREVIOUS_ZIP}" .cache/previous.zip
+elif command -v gh >/dev/null 2>&1 \
+	&& gh release download --repo "${GITHUB_REPOSITORY:-madroots/ai1wm-s3-community}" --pattern '*.zip' --output .cache/previous.zip --clobber >/dev/null 2>&1; then
+	:
+else
+	printf 'note: no previous release available; 05-upgrade-path will be skipped\n' >&2
+fi
+
 # Files are copied in rather than bind-mounted: bind mounts are unreadable on
 # SELinux hosts without relabeling the working tree.
-slug=all-in-one-wp-migration-s3-client-extension
-plugin_dir="/var/www/html/wp-content/plugins/${slug}"
-compose exec -T wp mkdir -p "${plugin_dir}" /tests
-tar -C .. --exclude=.git --exclude=.github --exclude=tests --exclude=scripts --exclude=upstream --exclude=docs -cf - . \
-	| compose exec -T wp tar -xf - -C "${plugin_dir}" --no-same-owner
+compose exec -T wp mkdir -p /tests
 tar --exclude=.cache -cf - . | compose exec -T wp tar -xf - -C /tests --no-same-owner
 compose cp .cache/ai1wm.zip wp:/tmp/ai1wm.zip
+compose cp .cache/plugin.zip wp:/tmp/plugin.zip
+if [[ -s .cache/previous.zip ]]; then
+	compose cp .cache/previous.zip wp:/tmp/previous.zip
+fi
 compose exec -T wp chown -R www-data:www-data /var/www/html/wp-content
 in_wp bash /tests/bootstrap.sh
 
