@@ -70,7 +70,24 @@ class Ai1wmne_Settings_Controller {
 		);
 	}
 
+	/**
+	 * Reject admin-post requests from users who may not manage S3 settings or
+	 * that lack a valid nonce. admin-post.php runs handlers for any logged-in
+	 * user, so this check is the only access control.
+	 *
+	 * @param  string $action Nonce action, also the admin-post action name
+	 * @return void
+	 */
+	protected static function authorize( $action ) {
+		if ( ! current_user_can( 'export' ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to manage S3 Client settings.', AI1WMNE_PLUGIN_NAME ), '', array( 'response' => 403 ) );
+		}
+
+		check_admin_referer( $action, $action . '_nonce' );
+	}
+
 	public static function connection( $params = array() ) {
+		self::authorize( 'ai1wmne_s3_connection' );
 		ai1wm_setup_environment();
 
 		// Set params
@@ -133,6 +150,7 @@ class Ai1wmne_Settings_Controller {
 	}
 
 	public static function settings( $params = array() ) {
+		self::authorize( 'ai1wmne_s3_settings' );
 		ai1wm_setup_environment();
 
 		// Set params

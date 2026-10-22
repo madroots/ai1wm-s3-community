@@ -211,6 +211,7 @@ if ( defined( 'WP_CLI' ) && class_exists( 'Ai1wm_Backup_WP_CLI_Base' ) ) {
 			$folder_path = $this->get_folder_path( $assoc_args );
 			$items       = $this->list_items( $folder_path );
 			$bucket_name = get_option( 'ai1wmne_s3_bucket_name', ai1wm_archive_bucket() );
+			$region_name = get_option( 'ai1wmne_s3_region_name', ai1wmne_aws_region_name( AI1WMNE_S3_DEFAULT_REGION_NAME ) );
 
 			$file = null;
 			foreach ( $items as $item ) {
@@ -236,6 +237,7 @@ if ( defined( 'WP_CLI' ) && class_exists( 'Ai1wm_Backup_WP_CLI_Base' ) ) {
 				'file_path'   => $file['path'],
 				'file_size'   => $file['bytes'],
 				'bucket_name' => $bucket_name,
+				'region_name' => $region_name,
 				'cli_args'    => $assoc_args,
 				'secret_key'  => get_option( AI1WM_SECRET_KEY, false ),
 			);

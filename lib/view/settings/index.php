@@ -42,6 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 				<div id="ai1wmne-credentials">
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=ai1wmne_s3_connection' ) ); ?>">
+						<?php wp_nonce_field( 'ai1wmne_s3_connection', 'ai1wmne_s3_connection_nonce' ); ?>
 						<div class="ai1wm-field">
 							<label for="ai1wmne-s3-api-endpoint">
 								<?php _e( 'S3 Endpoint', AI1WMNE_PLUGIN_NAME ); ?>
@@ -116,6 +117,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<?php endif; ?>
 
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=ai1wmne_s3_settings' ) ); ?>">
+						<?php wp_nonce_field( 'ai1wmne_s3_settings', 'ai1wmne_s3_settings_nonce' ); ?>
 						<article class="ai1wmne-article">
 							<h3><?php _e( 'Bucket name', AI1WMNE_PLUGIN_NAME ); ?></h3>
 							<p>
