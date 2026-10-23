@@ -20,7 +20,7 @@ new_version="$(php -r '
 ' "${PLUGIN_SLUG}")"
 [[ -n "${new_version}" ]] || fail 'could not read the version of the ZIP under test'
 
-wp plugin install /tmp/previous.zip --force --activate >/dev/null
+wp plugin install /tmp/previous.zip --force >/dev/null
 old_version="$(wp plugin get "${PLUGIN_SLUG}" --field=version)"
 pass "previous release ${old_version} installed over the build under test"
 
