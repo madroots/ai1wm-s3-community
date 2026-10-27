@@ -55,6 +55,9 @@ workflow artifact instead.
 for the upgrade case (or uses `PREVIOUS_ZIP`), downloads WP-CLI and the base plugin on the host (the containers need no
 internet) and copies the plugin into the container rather than bind-mounting it.
 
+`scripts/build-zip.sh` excludes the root `dist/` build output from the plugin ZIP. The package job runs
+`bash tests/package.sh` to check that PR and release output locations produce matching contents, even with stale files in `dist/`.
+
 ## One-time setup
 
 Secrets (Settings > Secrets and variables > Actions):

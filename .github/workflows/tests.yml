@@ -69,6 +69,9 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Check package consistency
+        run: bash tests/package.sh
+
       - name: Build the installable ZIP
         run: scripts/build-zip.sh "$(node scripts/version.mjs check)" dist
 

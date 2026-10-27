@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.60.1
+
+- Exclude build output from the installable ZIP so tested and released packages match.
+
 ## 1.60.0
 
 - Fix the "Run now" button on the Schedules page not starting backups on hosts that replace WordPress cron by running the event immediately instead of queueing a one-off cron event.

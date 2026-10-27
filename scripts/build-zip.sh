@@ -20,7 +20,7 @@ trap 'rm -rf "${stage}"' EXIT
 mkdir -p "${stage}/${slug}"
 rsync -a \
 	--exclude='.git/' --exclude='.github/' \
-	--exclude='scripts/' --exclude='tests/' --exclude='upstream/' --exclude='docs/' \
+	--exclude='/dist/' --exclude='scripts/' --exclude='tests/' --exclude='upstream/' --exclude='docs/' \
 	"${root}/" "${stage}/${slug}/"
 
 rm -f "${out}/${asset}" "${out}/${asset}.sha256"
