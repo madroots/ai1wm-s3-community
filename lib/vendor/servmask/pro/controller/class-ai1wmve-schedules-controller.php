@@ -233,13 +233,18 @@ if ( ! class_exists( 'Ai1wmve_Schedules_Controller' ) ) {
 			try {
 				$events = new Ai1wmve_Schedule_Events();
 				$event  = $events->find( $params['event_id'] );
-				$event->schedule_now();
+
+				// Acknowledge the click so the schedules page can reload, then
+				// run the backup immediately instead of queueing a WordPress
+				// cron event that never fires on hosts that replace WordPress cron.
+				ai1wm_json_response( array( 'errors' => array() ) );
+
+				$event->run();
 			} catch ( Ai1wmve_Schedules_Exception $e ) {
 				ai1wm_json_response( array( 'errors' => array( $e->getMessage() ) ) );
 				exit;
 			}
 
-			ai1wm_json_response( array( 'errors' => array() ) );
 			exit;
 		}
 

@@ -24,3 +24,12 @@ Skipping an unclear, non-security line is intentional; see `.github/agent/prompt
 | 1.58: Fix browser file upload broken by missing chunked upload handler | vague | skipped | The fork has no extension-owned browser uploader; the base plugin's `Ai1wm_Import_Upload` handler is left intact for non-S3 imports, so browser uploads are not broken here. |
 | 1.58: Fix the "I need help" contact form not opening on the reset and schedules pages | vendor-only | skipped | Support form was removed from the fork on purpose. |
 | 1.59: Fix file upload imports not being recognized as manual imports | vague | skipped | Relates to the upstream browser-upload feature that is not present in this fork; the base plugin's `ai1wm_manual_import` flow is untouched and intact. |
+
+## S3 1.60
+
+| Upstream line | Class | Decision | Detail |
+|---|---|---|---|
+| 1.60: Fix the "Run now" button not starting scheduled backups on hosts that replace WordPress cron. | bug | implemented | `Ai1wmve_Schedules_Controller::manual_run()` queued a one-off cron event via `wp_schedule_single_event()`, which never fires on hosts that replace WordPress cron. It now acknowledges the AJAX request and calls `$event->run()` directly so the export starts immediately; `run()` re-creates the recurring schedule idempotently and still handles one-off events. |
+| 1.60: Fix the "I need help" contact form sending duplicate requests. | vendor-only | skipped | Support form was removed from the fork on purpose (same as 1.58). |
+| 1.60: Fix file upload imports not being flagged as WordPress imports. | vague | skipped | Relates to the upstream browser-upload feature that is not present in this fork (consistent with 1.58/1.59); the base plugin's manual-import flow is untouched and intact. |
+| 1.60: Improve compatibility with the export and import capabilities of All-in-One WP Migration. | vague | skipped | No version or specific behaviour named; CI runs against base plugin 7.113 and every base-plugin API the extension calls is present. |

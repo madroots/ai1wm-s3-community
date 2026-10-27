@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.60.0
+
+- Fix the "Run now" button on the Schedules page not starting backups on hosts that replace WordPress cron by running the event immediately instead of queueing a one-off cron event.
+
 ## 1.59.0
 
 - Added WordPress Twenty Twenty-Five as a supported default theme in the site reset functionality.
