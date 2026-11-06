@@ -36,7 +36,7 @@ if ( ! class_exists( 'Ai1wmve_Schedules_Controller' ) ) {
 					$events = new Ai1wmve_Schedule_Events();
 					$event  = $events->find_or_new( $event_id );
 
-					$mysql = Ai1wm_Database_Utility::create_client();
+					$mysql = ai1wmne_database_client();
 
 					// Include table prefixes
 					if ( ai1wm_table_prefix() ) {

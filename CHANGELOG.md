@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.60.2
+
+- Restore media exclusion and the complete export screen on recent base-plugin versions by using the public database-client API, while retaining older-base compatibility.
+- Fix the same database-client incompatibility in schedule creation/editing, CLI table exclusions, and database resets.
+
 ## 1.60.1
 
 - Exclude build output from the installable ZIP so tested and released packages match.

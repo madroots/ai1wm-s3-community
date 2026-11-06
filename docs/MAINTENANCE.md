@@ -44,8 +44,13 @@ PHP_VERSION=7.4 AI1WM_VERSION=7.84 tests/run.sh 01-compat
 
 What the integration suite covers (`tests/cases/`): base-plugin compatibility gate, backup to S3 and restore,
 settings authorization, the update channel, upgrade from the last published release (settings, old backups),
-incremental backups, scheduled export, the S3 browser endpoint, retention. Not covered: restoring incremental
-backups (UI-only flow), real AWS/other providers (the test server is SeaweedFS), the browser UI.
+incremental backups, scheduled export, the S3 browser endpoint, retention, and archive contents after media/table
+exclusions. Not covered: restoring incremental backups (UI-only flow), real AWS/other providers (the test server
+is SeaweedFS), the browser UI.
+
+Database clients are acquired through `ai1wmne_database_client()`: newer base versions expose public
+`Ai1wm_Database_Utility::get_client()` and make `create_client()` private; older supported versions expose only
+public `create_client()`. Base-plugin API reviews must check method visibility as well as existence.
 
 Prereleases are invisible to the plugin's updater and to GitHub's "latest release", so no site is offered a test
 build. A PR closed without merging has its prerelease deleted at once (`prerelease-cleanup.yml`); a merged PR that changes `VERSION` keeps it until `release.yml` has verified the release against it, then deletes it. Fork PRs skip the prerelease and use the
