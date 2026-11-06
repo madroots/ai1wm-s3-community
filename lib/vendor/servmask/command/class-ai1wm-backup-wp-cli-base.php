@@ -134,7 +134,7 @@ if ( defined( 'WP_CLI' ) && ! class_exists( 'Ai1wm_Backup_WP_CLI_Base' ) ) {
 			if ( isset( $assoc_args['exclude-database'] ) ) {
 				$params['options']['no_database'] = true;
 			} elseif ( isset( $assoc_args['exclude-tables'] ) ) {
-				$mysql = Ai1wm_Database_Utility::create_client();
+				$mysql = ai1wmne_database_client();
 
 				// Include table prefixes
 				if ( ai1wm_table_prefix() ) {

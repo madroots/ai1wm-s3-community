@@ -22,6 +22,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Get a database client using the base plugin's public API.
+ *
+ * @return Ai1wm_Database
+ */
+function ai1wmne_database_client() {
+	if ( method_exists( 'Ai1wm_Database_Utility', 'get_client' ) ) {
+		return Ai1wm_Database_Utility::get_client();
+	}
+
+	// Older base versions expose create_client() instead of get_client().
+	return Ai1wm_Database_Utility::create_client();
+}
+
+/**
  * Check whether export/import is running
  *
  * @return boolean
