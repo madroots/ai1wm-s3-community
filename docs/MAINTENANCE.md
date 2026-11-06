@@ -44,9 +44,9 @@ PHP_VERSION=7.4 AI1WM_VERSION=7.84 tests/run.sh 01-compat
 
 What the integration suite covers (`tests/cases/`): base-plugin compatibility gate, backup to S3 and restore,
 settings authorization, the update channel, upgrade from the last published release (settings, old backups),
-incremental backups, scheduled export, the S3 browser endpoint, retention, and archive contents after media/table
-exclusions. Not covered: restoring incremental backups (UI-only flow), real AWS/other providers (the test server
-is SeaweedFS), the browser UI.
+incremental backups, scheduled export, the S3 browser endpoint, retention, archive contents after media/table
+exclusions, and server rendering of the export and schedule-editor screens. Not covered: restoring incremental
+backups (UI-only flow), real AWS/other providers (the test server is SeaweedFS), browser-side UI behavior.
 
 Database clients are acquired through `ai1wmne_database_client()`: newer base versions expose public
 `Ai1wm_Database_Utility::get_client()` and make `create_client()` private; older supported versions expose only
