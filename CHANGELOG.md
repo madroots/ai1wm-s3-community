@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.60.3
+
+- Reviewed against All-in-One WP Migration 7.114.
+
 ## 1.60.2
 
 - Restore media exclusion and the complete export screen on recent base-plugin versions by using the public database-client API, while retaining older-base compatibility.
