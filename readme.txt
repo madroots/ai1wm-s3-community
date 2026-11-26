@@ -3,7 +3,7 @@ Contributors: simonfujdala
 Requires at least: 5.9
 Requires PHP: 7.4
 Requires Plugins: all-in-one-wp-migration
-Stable tag: 1.60.2
+Stable tag: 1.60.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -35,6 +35,9 @@ For an immediate check, use the "Check for updates" action in this plugin's row 
 Releases are automated: a daily workflow compares ServMask's public S3 Client changelog with this fork, prepares a pull request, and merging it publishes the tagged release. See docs/MAINTENANCE.md in the repository. Manual release: `node scripts/version.mjs bump X.Y.Z --note "..."`, merge to main, and the tag is pushed automatically.
 
 == Changelog ==
+
+= 1.60.3 =
+* Reviewed against All-in-One WP Migration 7.114.
 
 = 1.60.2 =
 * Restore media exclusion and the complete export screen on recent base-plugin versions by using the public database-client API, while retaining older-base compatibility.
